@@ -41,6 +41,7 @@ that this library implements.
 # Installation
 
 The source code is currently hosted on GitHub: https://github.com/pymetrics/audit-ai
+
 You can install the latest released version with `pip`.
 
 ```
