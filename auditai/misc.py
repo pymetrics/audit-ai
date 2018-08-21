@@ -401,3 +401,64 @@ def test_multiple(labels, decisions,
             print("%s: %f" % (key, results[key]))
 
     return results
+
+
+def quick_bias_check(clf, df, 
+                    feature_names, categories, 
+                    thresh_pct=80, pass_ratio=.8):
+    """
+    Useful for generating a bias_report more quickly than make_bias_report
+    simply uses np.percentile for checks
+
+    Parameters
+    -----------
+    clf : sklearn clf
+        fitted clf with predict object
+    df : pandas DataFrame
+        reference dataframe containing labeled features to test for bias
+    feature_names : list of strings
+        names of features used in fitting clf
+    categories : list of strings
+        names of categories to test for bias, e.g. ['gender', 'ethnicity']
+    thresh_pct : float, default 80
+        percentile in [0, 100] at which to check for pass rates
+    pass_ratio : float, default .8
+        cutoff which specifies whether ratio of min/max pass rates is acceptable
+
+    Returns
+    --------
+    passed: bool
+        indicates whether all groups have min/max pass rates >= `pass_ratio`
+    bias_report : dict
+        of form {'gender': {'categories':['F', 'M'],
+                            'averages': [.2, .22],
+                            'errors': [[.2, .2], [.22, .22]]}
+                }
+    min_bias_ratio : float
+        min of min_max_ratios across all categories
+        if this value is less than `pass_ratio`, passed == False
+    """
+
+
+    bdf = df.copy()
+    X = bdf.loc[:, feature_names].values
+    decs = clf.decision_function(X)
+    bdf['score'] = decs
+
+    min_max_ratios = []
+    bias_report = {}
+    for category in categories:
+        cat_df = bdf[bdf[category].notnull()]
+        cat_df['pass'] = cat_df.score > np.percentile(cat_df.score, thresh_pct)
+        cat_group = gdf.groupby(category).mean()['pass']
+        cat_dict = cat_group.to_dict()
+        min_max_ratios.append(cat_group.min()/float(cat_group.max()))
+        bias_report[category] = {
+                        'averages': cat_dict.values(), 
+                        'categories': cat_dict.keys(), 
+                        'errors': [[i, i] for i in cat_dict.values()]
+                                }
+
+    passed = all(np.array(min_max_ratios) >= pass_ratio)
+    min_bias_ratio = min(min_max_ratios)
+    return passed, bias_report, min_bias_ratio
