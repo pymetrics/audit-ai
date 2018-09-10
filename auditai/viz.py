@@ -148,10 +148,12 @@ def get_bias_plots(clf, df, feature_names, categories, **kwargs):
         plot_bias_pvals(chi2_thresholds, chi2_pvals, category)
 
 
-def bias_bar_plot(clf, df, feature_names, categories,
-                  low=None, high=None, num=100, ref_threshold=None):
+def bias_bar_plot(clf=None, df=None, feature_names=None,
+                  categories=None, low=.01, high=.99, num=99,
+                  ref_threshold=None, bias_report=None):
     """
     Plot bar plots for overall recommendation by bias group
+    NB: if bias_report is not None, only ref_threshold is also needed
 
     Parameters
     ------------
@@ -167,6 +169,8 @@ def bias_bar_plot(clf, df, feature_names, categories,
         range of values for thresholds
     ref_threshold : float
         cutoff value at which to generate plot
+    bias_report: dict, optional
+        output of make_bias_report
 
     Returns
     ------------
@@ -176,7 +180,14 @@ def bias_bar_plot(clf, df, feature_names, categories,
     --------
     Bar plot containing recommendations across each bias group
     """
-    bias_report = make_bias_report(clf, df, feature_names, categories,
+    if all(kw is None for kw in (clf, df, feature_names, categories, bias_report)):
+        raise ValueError('if bias_report is None, other arguments cannot be!')
+
+    if ref_threshold is None:
+        raise ValueError('ref_threshold must be defined')
+        
+    if bias_report is None:
+        bias_report = make_bias_report(clf, df, feature_names, categories,
                                    low, high, num, ref_threshold)
 
     for key in bias_report:
