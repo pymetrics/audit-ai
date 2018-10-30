@@ -90,6 +90,13 @@ def cmh_test(dfs, pass_col=False):
     and after), the CMH test examines differences over any number of
     K instances.
 
+    The Yates correction for continuity is not used; while some experts 
+    recommend its use even for moderately large samples (hundreds), the 
+    effect is to reduce the test statistic and increase the p-value. This
+    is a conservative approach in experimental settings, but NOT in adverse
+    impact monitoring; such an approach would systematically allow marginal
+    cases of bias to go undetected.
+
     Parameters
     ------------
     dfs : pd.DataFrame, shape = (2,2) OR list of pd.DataFrame objects
@@ -110,6 +117,9 @@ def cmh_test(dfs, pass_col=False):
 
     References
     -------
+
+    McDonald, J.H. 2014. Handbook of Biological Statistics (3rd ed.). Sparky
+    House Publishing, Baltimore, Maryland.
 
     References needed for this calculation of odds ratio (correct but atypical
     formula) and pooled odds ratio.
