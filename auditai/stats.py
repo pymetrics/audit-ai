@@ -233,7 +233,7 @@ def bayes_factor(labels, results, threshold=None,
 
 
 def cmh_test(dfs, pass_col=False):
-    '''
+    """
     The pairwise special case of the Cochran-Mantel-Haenszel test. The CMH test
     is a generalization of the McNemar Chi-Squared test of Homogenaity. Whereas
     the McNemar test examines differences over two intervals (usually before
@@ -273,7 +273,7 @@ def cmh_test(dfs, pass_col=False):
 
     Forumla example from Boston University School of Public Health
     https://tinyurl.com/k3du64x
-    '''
+    """
     partial_ed =  partial(extract_data, pass_col= pass_col)
     data = map(partial_ed, dfs)
     c_nums = [val[2] for val in data]
@@ -287,7 +287,7 @@ def cmh_test(dfs, pass_col=False):
 
 
 def multi_odds_ratio(dfs, pass_col=False):
-    '''
+    """
     Common odds ratio. Designed for multiple interval odds ratio for use with
     the cmh test and breslow-day test, but is generalized for the 2x2 case.
 
@@ -338,7 +338,7 @@ def multi_odds_ratio(dfs, pass_col=False):
     ----------
     Boston University School of Public Health
     https://tinyurl.com/k3du64x
-    '''
+    """
 
     if isinstance(dfs,list):
         #if we have a list of multiple dfs
@@ -359,7 +359,7 @@ def multi_odds_ratio(dfs, pass_col=False):
 
 
 def bres_day(df, r, pass_col=False):
-    '''
+    """
     Calculates the Breslow-Day test of homogeneous association for a
     2 x 2 x k table. E.g., given three factors, A, B, and C, the Breslow-Day
     test would measure wheher pairwise effects (AB,AC, BC) have identical
@@ -386,7 +386,7 @@ def bres_day(df, r, pass_col=False):
     References
     -------
 
-    '''
+    """
 
     pass0, fail0, pass1, fail1, total = parse_matrix(df,pass_col)
 
