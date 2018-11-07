@@ -2,7 +2,9 @@ import pandas as pd
 
 def parse_matrix(df,pass_col=False):
     """
-    Utility function for parsing matrix into cell counts
+    Utility function for parsing matrix into cell counts. Used for
+    parsing strata for the Cochran-Manzel-Haenszel and Breslow-Day tests in
+    stats.cmh_test and stats.multi_odds_ratio
 
     Parameters
     ------------
@@ -44,8 +46,9 @@ def parse_matrix(df,pass_col=False):
 
 def extract_data(df, pass_col=False):
     """
-    Utility function for preprocessing data for cmh test and odds ratio.
-    Not for generalized use. Returns component values for relevant tests.
+    Utility function for preprocessing data for stats.cmh_test and
+    stats.multi_odds_ratio. Not for generalized use. Returns component
+    values for relevant tests.
 
     Parameters
     ------------
@@ -76,5 +79,3 @@ def extract_data(df, pass_col=False):
     /(total*total*(total - 1))
 
     return r_num, r_den, c_num, c_den
-
-

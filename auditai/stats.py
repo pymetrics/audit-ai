@@ -1,7 +1,6 @@
 import numpy as np
 from pandas import DataFrame
-import scipy as sc
-from scipy.stats import chi2
+from scipy.stats import chi2, fisher_exact, chi2_contingency
 from functools import partial
 
 from .utils.crosstabs import (crosstab,
@@ -91,14 +90,15 @@ def fisher_exact(labels, results, threshold=None):
     # get crosstab for two groups
     ctab = top_bottom_crosstab(labels, results)
 
-    oddsratio, pvalue = sc.stats.fisher_exact(ctab)
+    oddsratio, pvalue = fisher_exact(ctab)
     return oddsratio, pvalue
 
 
-def chi2(labels, results, threshold=None):
+def chi2_test(labels, results, threshold=None):
     """
-    Returns odds ratio and p-value of Chi-square test of independence
-    Uses scipy.stats.chi2_contingency, using an Rx2 contingency table
+    Takes list of labels and results and returns odds ratio and p-value of
+    Chi-square test of independence. Uses scipy.stats.chi2_contingency,
+    using an Rx2 contingency table
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.chi2_contingency.html
 
     Parameters
@@ -130,7 +130,7 @@ def chi2(labels, results, threshold=None):
     results = boolean_array(results, threshold=threshold)
     ctab = crosstab(labels, results)
 
-    chi2_stat, pvalue = sc.stats.chi2_contingency(ctab)[:2]
+    chi2_stat, pvalue = chi2_contingency(ctab)[:2]
     return chi2_stat, pvalue
 
 
@@ -240,8 +240,8 @@ def cmh_test(dfs, pass_col=False):
     and after), the CMH test examines differences over any number of
     K instances.
 
-    The Yates correction for continuity is not used; while some experts 
-    recommend its use even for moderately large samples (hundreds), the 
+    The Yates correction for continuity is not used; while some experts
+    recommend its use even for moderately large samples (hundreds), the
     effect is to reduce the test statistic and increase the p-value. This
     is a conservative approach in experimental settings, but NOT in adverse
     impact monitoring; such an approach would systematically allow marginal
@@ -271,11 +271,8 @@ def cmh_test(dfs, pass_col=False):
     McDonald, J.H. 2014. Handbook of Biological Statistics (3rd ed.). Sparky
     House Publishing, Baltimore, Maryland.
 
-    References needed for this calculation of odds ratio (correct but atypical
-    formula) and pooled odds ratio.
-
-    Example
-
+    Forumla example from Boston University School of Public Health
+    https://tinyurl.com/k3du64x
     '''
     partial_ed =  partial(extract_data, pass_col= pass_col)
     data = map(partial_ed, dfs)
@@ -289,7 +286,7 @@ def cmh_test(dfs, pass_col=False):
     return cmh, pcmh
 
 
-def odds_ratio(dfs, pass_col=False):
+def multi_odds_ratio(dfs, pass_col=False):
     '''
     Common odds ratio. Designed for multiple interval odds ratio for use with
     the cmh test and breslow-day test, but is generalized for the 2x2 case.
@@ -311,12 +308,6 @@ def odds_ratio(dfs, pass_col=False):
     ----------
     r : pooled odds ratio
 
-    References
-    -------
-
-    References needed for this calculation of odds ratio (correct but atypical
-    formula) and pooled odds ratio.
-
     Example
     -------
     from https://en.wikipedia.org/wiki/Odds_ratio#Example
@@ -325,7 +316,7 @@ def odds_ratio(dfs, pass_col=False):
     while only 10 women did the same.
 
     df = pd.DataFrame({'pass':[90,20], 'fail':[10,80]})
-    odds_ratio(df)
+    multi_odds_ratio(df)
     > 36.0
 
     For odds ratios over multiple intervals, the use-case of the CMH test, let's
@@ -334,21 +325,25 @@ def odds_ratio(dfs, pass_col=False):
 
     df2 = pd.DataFrame({'pass':[70,70], 'fail':[30,30]})
     dfs = [df,df2]
-    odds_ratio(df)
+    multi_odds_ratio(df)
     > 36.0
 
-    odds_ratio(df2)
+    multi_odds_ratio(df2)
     > 1.0
 
-    odds_ratio(dfs)
+    multi_odds_ratio(dfs)
     >4.043478260869565
+
+    References
+    ----------
+    Boston University School of Public Health
+    https://tinyurl.com/k3du64x
     '''
 
     if isinstance(dfs,list):
         #if we have a list of multiple dfs
         partial_ed =  partial(extract_data, pass_col= pass_col)
         data = map(partial_ed, dfs)
-        # data = map(extract_data, dfs)
         r_nums = [val[0] for val in data]
         r_dens = [val[1] for val in data]
         r_num = sum(r_nums)
@@ -376,7 +371,7 @@ def bres_day(df, r, pass_col=False):
         a 2x2 contingency table
         rows indexed by group (0,1)
         columns labelled 'pass' and 'fail'
-    r   : odds ratio; cmh.odds_ratio
+    r   : odds ratio; auditai.stats.multi_odds_ratio
     pass_col : Boolean or string, optional
         if true, column names assumed to be 'pass' and 'fail'
         if string, enter column name of passing counts
@@ -390,11 +385,6 @@ def bres_day(df, r, pass_col=False):
 
     References
     -------
-
-    References needed for this calculation of odds ratio (correct but atypical
-    formula) and pooled odds ratio.
-
-    Example
 
     '''
 
@@ -481,10 +471,10 @@ def test_cmh_bd(dfs, pass_col=False):
 
     """
 
-    r = odds_ratio(dfs, pass_col)
+    r = multi_odds_ratio(dfs, pass_col)
     cmh, pcmh = cmh_test(dfs, pass_col)
     part_bd = partial(bres_day, r=r, pass_col=pass_col)
-    
+
     # sum of Breslow-Day chi-square statistics
     bd = DataFrame(map(part_bd, dfs))[0].sum()
     pbd = 1 - chi2.cdf(bd, len(dfs)-1)
