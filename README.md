@@ -10,7 +10,7 @@ by the Data Science team at [pymetrics](https://www.pymetrics.com/)
 
 # Bias Testing for Generalized Machine Learning Applications
 
-`audit-AI` a tool to measure and mitigate the effects discriminatory
+`audit-AI` is a tool to measure and mitigate the effects of discriminatory
 patterns in training data and the predictions made by machine learning
 algorithms trained for the purposes of socially sensitive decision processes.
 
