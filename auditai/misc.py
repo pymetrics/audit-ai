@@ -44,7 +44,7 @@ def anova(labels, results, subset_labels=None):
     return f_oneway(*score_vectors)
 
 
-def bias_test_check(labels, results, category=None, test_thresh=50, **kwargs):
+def bias_test_check(labels, results, category=None, test_thresh=0.5 **kwargs):
     """
     Utility function for checking if statistical tests are passed
     at a reference threshold
