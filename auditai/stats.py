@@ -362,7 +362,7 @@ def bres_day(df, r, pass_col=False):
     """
     Calculates the Breslow-Day test of homogeneous association for a
     2 x 2 x k table. E.g., given three factors, A, B, and C, the Breslow-Day
-    test would measure wheher pairwise effects (AB,AC, BC) have identical
+    test would measure wheher pairwise effects (AB, AC, BC) have identical
     odds ratios.
 
     Parameters
@@ -416,7 +416,7 @@ def bres_day(df, r, pass_col=False):
 
 def test_cmh_bd(dfs, pass_col=False):
     """
-    Cochran-Mantel-Haenszel and associated tests
+    Master function for Cochran-Mantel-Haenszel and associated tests
     Overview: Compare multiple 2x2 pass-fail contingency tables by gender
         or ethnicity (pairwise) to determine if there is a consistent
         pattern across regions, time periods, or similar groupings.

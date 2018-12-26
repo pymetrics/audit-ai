@@ -1,3 +1,5 @@
+# helper functions specifically for cmh tests
+
 import pandas as pd
 
 def parse_matrix(df,pass_col=False):
@@ -47,7 +49,9 @@ def parse_matrix(df,pass_col=False):
 def extract_data(df, pass_col=False):
     """
     Utility function for preprocessing data for stats.cmh_test and
-    stats.multi_odds_ratio. Not for generalized use. Returns component
+    stats.multi_odds_ratio. Used for parsing strata for the
+    Cochran-Manzel-Haenszel and Breslow-Day tests in
+    stats.cmh_test and stats.multi_odds_ratio Returns component
     values for relevant tests.
 
     Parameters
@@ -63,8 +67,8 @@ def extract_data(df, pass_col=False):
 
     Returns
     ----------
-    r_num : odds ratio numerator; n group 0 pass + n group 1 fail over total
-    r_den : odds ratio denominator; n group 0 fail + n group 1 pass over total
+    r_num : odds ratio numerator; n group 0 pass * n group 1 fail over total
+    r_den : odds ratio denominator; n group 0 fail * n group 1 pass over total
     c_num : CMH numerator
     c_den : CMH denominator
     """
