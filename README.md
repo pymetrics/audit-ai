@@ -22,6 +22,45 @@ discrimination, in a world where more and more decisions are being automated
 by Artifical Intelligence, our ability to understand and identify the degree
 to which an algorithm is fair or biased is a step in the right direction.
 
+# Regulatory Compliance and Checks for Practical and Statistical Bias
+
+According to the Uniform Guidelines on Employee Selection Procedures (UGESP;
+EEOC et al., 1978), all assessment tools should comply to fair standard of
+treatment for all protected groups. Audit-ai extends this to machine learning
+methods. Let's say we build a model that makes some prediction about people.
+This model could theoretically be anything -- a prediction of credit scores,
+the likelihood of prison recidivism, the cost of a home loan, etc. Audit-ai
+takes data from a known population (e.g., credit information from people of
+multiple genders and ethnicities), and runs them through the model in question.
+The proportional pass rates of the highest-passing demographic group are compared
+to the lowest-passing group for each demographic category (gender and
+ethnicity). This proportion is known as the bias ratio.
+
+Audit-ai determines whether groups are different according to a standard of
+statistical significance (within a statistically different margin of error) or
+practical significance (whether a difference is large enough to matter on a
+practical level). The exact threshold of statistical and practical significance
+depends on the field and use-case. Within the hiring space, the EEOC often
+uses a statistical significance of p < .05 to determine bias, and a bias ratio
+below the 4/5ths rule to demonstrate practical significance.
+
+The 4/5ths rule effectively states that the lowest-passing group has to be
+within 4/5ths of the pass rate of the highest-passing group. Consider an example
+with 4,000 users, 1,000 of each of the following groups: Asian, Black,
+Hispanic/Latino, and White, who pass at a frequency of 250, 270, 240 and 260
+users, respectively. The highest and lowest passing groups are Black (27%) and
+Hispanic/Latino (24%), respectively. The bias ratio is therefore 24/27 or .889.
+As this ratio is greater than .80 (4/5ths), the legal requirement enforced by
+the EEOC, the model would pass the check for practical significance. Likewise,
+a chi-squared test (a common statistical test for count data) would report that
+these groups are above the p = .05 threshold, and therefore pass the check for
+statistical significance.
+
+Audit-ai also offers tools to check for differences over time or across
+different regions, using the Cochran-Mantel-Hanzel test, a common test in
+regulatory circles. To our knowledge this is the first implementation of this
+measure in an open-source python format.
+
 # Features
 
 Here are a few of the bias testing and algorithm auditing techniques
