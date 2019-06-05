@@ -19,7 +19,7 @@ about how to make machine learning algorithms more fair. While identifying
 potential bias in training datasets and by consequence the machine learning
 algorithms trained on them is not sufficient to solve the problem of
 discrimination, in a world where more and more decisions are being automated
-by Artifical Intelligence, our ability to understand and identify the degree
+by Artificial Intelligence, our ability to understand and identify the degree
 to which an algorithm is fair or biased is a step in the right direction.
 
 # Regulatory Compliance and Checks for Practical and Statistical Bias
