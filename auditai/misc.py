@@ -450,7 +450,7 @@ def quick_bias_check(clf, df, feature_names, categories, thresh_pct=80,
     for category in categories:
         cat_df = bdf[bdf[category].notnull()]
         cat_df['pass'] = cat_df.score > np.percentile(cat_df.score, thresh_pct)
-        cat_group = df.groupby(category).mean()['pass']
+        cat_group = bdf.groupby(category).mean()['pass']
         cat_dict = cat_group.to_dict()
         min_max_ratios.append(cat_group.min()/float(cat_group.max()))
         bias_report[category] = {'averages': cat_dict.values(),
