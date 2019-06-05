@@ -54,7 +54,7 @@ def ztest(labels, results, threshold=None):
     return zstat, pvalue
 
 
-def fisher_exact(labels, results, threshold=None):
+def fisher_exact_test(labels, results, threshold=None):
     """
     Returns odds ratio and p-value of Fisher's exact test
     Uses scipy.stats.fisher_exact, which only works for 2x2 contingency tables
@@ -231,7 +231,6 @@ def bayes_factor(labels, results, threshold=None,
     return oddsratio, BF
 
 
-
 def cmh_test(dfs, pass_col=False):
     """
     The pairwise special case of the Cochran-Mantel-Haenszel test. The CMH test
@@ -274,8 +273,8 @@ def cmh_test(dfs, pass_col=False):
     Forumla example from Boston University School of Public Health
     https://tinyurl.com/k3du64x
     """
-    partial_ed =  partial(extract_data, pass_col= pass_col)
-    data = map(partial_ed, dfs)
+    partial_ed = partial(extract_data, pass_col=pass_col)
+    data = list(map(partial_ed, dfs))
     c_nums = [val[2] for val in data]
     c_dens = [val[3] for val in data]
     c_num = sum(c_nums)**2
@@ -319,9 +318,9 @@ def multi_odds_ratio(dfs, pass_col=False):
     multi_odds_ratio(df)
     > 36.0
 
-    For odds ratios over multiple intervals, the use-case of the CMH test, let's
-    presume that the next week 70 of 100 men drank wine, but now 70 of 100 women
-    also drank.
+    For odds ratios over multiple intervals, the use-case of the CMH test,
+    let's presume that the next week 70 of 100 men drank wine, but now
+    70 of 100 women also drank.
 
     df2 = pd.DataFrame({'pass':[70,70], 'fail':[30,30]})
     dfs = [df,df2]
@@ -340,16 +339,16 @@ def multi_odds_ratio(dfs, pass_col=False):
     https://tinyurl.com/k3du64x
     """
 
-    if isinstance(dfs,list):
-        #if we have a list of multiple dfs
-        partial_ed =  partial(extract_data, pass_col= pass_col)
-        data = map(partial_ed, dfs)
+    if isinstance(dfs, list):
+        # if we have a list of multiple dfs
+        partial_ed = partial(extract_data, pass_col=pass_col)
+        data = list(map(partial_ed, dfs))
         r_nums = [val[0] for val in data]
         r_dens = [val[1] for val in data]
         r_num = sum(r_nums)
         r_den = sum(r_dens)
-    elif np.shape(dfs) == (2,2):
-        data = extract_data(dfs, pass_col= pass_col)
+    elif np.shape(dfs) == (2, 2):
+        data = extract_data(dfs, pass_col=pass_col)
         r_num = data[0]
         r_den = data[1]
     else:
@@ -388,7 +387,7 @@ def bres_day(df, r, pass_col=False):
 
     """
 
-    pass0, fail0, pass1, fail1, total = parse_matrix(df,pass_col)
+    pass0, fail0, pass1, fail1, total = parse_matrix(df, pass_col)
 
     coef = []
     coef.append(1.0-r)
@@ -476,7 +475,7 @@ def test_cmh_bd(dfs, pass_col=False):
     part_bd = partial(bres_day, r=r, pass_col=pass_col)
 
     # sum of Breslow-Day chi-square statistics
-    bd = DataFrame(map(part_bd, dfs))[0].sum()
+    bd = DataFrame(list(map(part_bd, dfs)))[0].sum()
     pbd = 1 - chi2.cdf(bd, len(dfs)-1)
 
     return r, cmh, pcmh, bd, pbd
