@@ -44,7 +44,7 @@ def anova(labels, results, subset_labels=None):
     return f_oneway(*score_vectors)
 
 
-def bias_test_check(labels, results, category=None, test_thresh=0.5, **kwargs):
+def bias_test_check(labels, results, category=None, **kwargs):
     """
     Utility function for checking if statistical tests are passed
     at a reference threshold
@@ -65,8 +65,7 @@ def bias_test_check(labels, results, category=None, test_thresh=0.5, **kwargs):
     --------
     print statement indicating whether specific statistical tests pass or fail
     """
-    if results.max() > 0:
-        test_thresh = 50
+    test_thresh = kwargs.get('test_thresh', np.median(results))
 
     min_props, z_ps, fisher_ps, chi_ps, bfs = compare_groups(
         labels, results, low=test_thresh, num=1, **kwargs)
