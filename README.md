@@ -4,7 +4,7 @@
 
 Open Sourced Bias Testing for Generalized Machine Learning Applications
 
-`audit-AI` is a Python library built on top of `pandas` and `sklearn`that
+`audit-AI` is a Python library built on top of `pandas` and `sklearn` that
 implements fairness-aware machine learning algorithms. `audit-AI` was developed
 by the Data Science team at [pymetrics](https://www.pymetrics.com/)
 

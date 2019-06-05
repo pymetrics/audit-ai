@@ -65,6 +65,9 @@ def bias_test_check(labels, results, category=None, test_thresh=0.5, **kwargs):
     --------
     print statement indicating whether specific statistical tests pass or fail
     """
+    if results.max() > 0:
+        test_thresh = 50
+
     min_props, z_ps, fisher_ps, chi_ps, bfs = compare_groups(
         labels, results, low=test_thresh, num=1, **kwargs)
 
@@ -374,7 +377,7 @@ def test_multiple(labels, decisions,
 
     decisions = boolean_array(decisions)
     crosstab = pd.crosstab(pd.Series(labels), pd.Series(decisions))
-    crosstab = crosstab.as_matrix()
+    crosstab = crosstab.values
 
     # can only perform 2-group z-tests & fisher tests
     # getting crosstabs for groups with highest and lowest pass rates

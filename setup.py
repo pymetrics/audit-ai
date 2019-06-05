@@ -37,9 +37,10 @@ setup(name='audit-AI',
       packages=find_packages(exclude=['*.tests', '*.tests.*']),
       install_requires=[
             'numpy',
-            'scipy',
+            'scipy==1.2',
             'pandas',
-            'matplotlib'
+            'matplotlib',
+            'statsmodels'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],

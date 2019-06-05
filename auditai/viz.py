@@ -457,6 +457,7 @@ def plot_kdes(labels=None,
         sns.kdeplot(df.loc[df.label == lab].result,
                     shade=False, label=lab, ax=ax[1],
                     cumulative=True, **kwargs)
+
     ax0_max_y = max([max(i.get_data()[1]) for i in ax[0].get_lines()])
     ax[0].set_ylim(0, ax0_max_y*1.1)
     plt.show()
