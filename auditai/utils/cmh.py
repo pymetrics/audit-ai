@@ -1,8 +1,7 @@
-# helper functions specifically for cmh tests
+#  helper functions specifically for cmh tests
 
-import pandas as pd
 
-def parse_matrix(df,pass_col=False):
+def parse_matrix(df, pass_col=False):
     """
     Utility function for parsing matrix into cell counts. Used for
     parsing strata for the Cochran-Manzel-Haenszel and Breslow-Day tests in
@@ -28,23 +27,27 @@ def parse_matrix(df,pass_col=False):
     total : total n for matrix
     """
 
-    if pass_col: #if True or string
-        if isinstance(pass_col, str): #pass a string for pass column
+    # if True or string
+    if pass_col:
+        # pass a string for pass column
+        if isinstance(pass_col, str):
             fail_col = df.columns[df.columns != pass_col][0]
-        else: #default mapping of column headers
+        else:
+            # default mapping of column headers
             pass_col = 'pass'
             fail_col = 'fail'
-    else: #
+    else:
         pass_col = 1
         fail_col = 0
-    pass0 = float(df.iloc[0][pass_col]) #a
-    fail0 = float(df.iloc[0][fail_col]) #b
-    pass1 = float(df.iloc[1][pass_col]) #c
-    fail1 = float(df.iloc[1][fail_col]) #d
+    pass0 = float(df.iloc[0][pass_col])
+    fail0 = float(df.iloc[0][fail_col])
+    pass1 = float(df.iloc[1][pass_col])
+    fail1 = float(df.iloc[1][fail_col])
 
     total = pass0 + fail0 + pass1 + fail1
 
     return pass0, fail0, pass1, fail1, total
+
 
 def extract_data(df, pass_col=False):
     """
@@ -73,13 +76,13 @@ def extract_data(df, pass_col=False):
     c_den : CMH denominator
     """
 
-    pass0, fail0, pass1, fail1, total = parse_matrix(df,pass_col)
+    pass0, fail0, pass1, fail1, total = parse_matrix(df, pass_col)
 
     r_num = (pass0*fail1)/(total)
     r_den = (fail0*pass1)/(total)
 
     c_num = pass0 - ((pass0 + fail0)*(pass0 + pass1))/(total)
-    c_den = ((pass0 + fail0)*(pass1 + fail1)*(pass0 + pass1)*(fail0 + fail1))\
-    /(total*total*(total - 1))
+    c_den = (((pass0 + fail0)*(pass1 + fail1)*(pass0 + pass1)*(fail0 + fail1))
+             / (total*total*(total - 1)))
 
     return r_num, r_den, c_num, c_den

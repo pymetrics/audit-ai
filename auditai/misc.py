@@ -44,7 +44,7 @@ def anova(labels, results, subset_labels=None):
     return f_oneway(*score_vectors)
 
 
-def bias_test_check(labels, results, category=None, test_thresh=0.5 **kwargs):
+def bias_test_check(labels, results, category=None, test_thresh=None, **kwargs):
     """
     Utility function for checking if statistical tests are passed
     at a reference threshold
@@ -65,6 +65,9 @@ def bias_test_check(labels, results, category=None, test_thresh=0.5 **kwargs):
     --------
     print statement indicating whether specific statistical tests pass or fail
     """
+    if test_thresh is None:
+        test_thresh = np.median(results)
+
     min_props, z_ps, fisher_ps, chi_ps, bfs = compare_groups(
         labels, results, low=test_thresh, num=1, **kwargs)
 
@@ -374,7 +377,7 @@ def test_multiple(labels, decisions,
 
     decisions = boolean_array(decisions)
     crosstab = pd.crosstab(pd.Series(labels), pd.Series(decisions))
-    crosstab = crosstab.as_matrix()
+    crosstab = crosstab.values
 
     # can only perform 2-group z-tests & fisher tests
     # getting crosstabs for groups with highest and lowest pass rates
@@ -403,9 +406,8 @@ def test_multiple(labels, decisions,
     return results
 
 
-def quick_bias_check(clf, df, 
-                    feature_names, categories, 
-                    thresh_pct=80, pass_ratio=.8):
+def quick_bias_check(clf, df, feature_names, categories, thresh_pct=80,
+                     pass_ratio=.8):
     """
     Useful for generating a bias_report more quickly than make_bias_report
     simply uses np.percentile for checks
@@ -423,7 +425,7 @@ def quick_bias_check(clf, df,
     thresh_pct : float, default 80
         percentile in [0, 100] at which to check for pass rates
     pass_ratio : float, default .8
-        cutoff which specifies whether ratio of min/max pass rates is acceptable
+        cutoff specifying whether ratio of min/max pass rates is acceptable
 
     Returns
     --------
@@ -439,7 +441,6 @@ def quick_bias_check(clf, df,
         if this value is less than `pass_ratio`, passed == False
     """
 
-
     bdf = df.copy()
     X = bdf.loc[:, feature_names].values
     decs = clf.decision_function(X)
@@ -450,14 +451,13 @@ def quick_bias_check(clf, df,
     for category in categories:
         cat_df = bdf[bdf[category].notnull()]
         cat_df['pass'] = cat_df.score > np.percentile(cat_df.score, thresh_pct)
-        cat_group = gdf.groupby(category).mean()['pass']
+        cat_group = bdf.groupby(category).mean()['pass']
         cat_dict = cat_group.to_dict()
         min_max_ratios.append(cat_group.min()/float(cat_group.max()))
-        bias_report[category] = {
-                        'averages': cat_dict.values(), 
-                        'categories': cat_dict.keys(), 
-                        'errors': [[i, i] for i in cat_dict.values()]
-                                }
+        bias_report[category] = {'averages': cat_dict.values(),
+                                 'categories': cat_dict.keys(),
+                                 'errors': [[i, i] for i in cat_dict.values()]
+                                 }
 
     passed = all(np.array(min_max_ratios) >= pass_ratio)
     min_bias_ratio = min(min_max_ratios)

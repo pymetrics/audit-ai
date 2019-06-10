@@ -180,15 +180,16 @@ def bias_bar_plot(clf=None, df=None, feature_names=None,
     --------
     Bar plot containing recommendations across each bias group
     """
-    if all(kw is None for kw in (clf, df, feature_names, categories, bias_report)):
+    if all(kw is None for kw in (clf, df, feature_names, categories,
+                                 bias_report)):
         raise ValueError('if bias_report is None, other arguments cannot be!')
 
     if ref_threshold is None:
         raise ValueError('ref_threshold must be defined')
-        
+
     if bias_report is None:
         bias_report = make_bias_report(clf, df, feature_names, categories,
-                                   low, high, num, ref_threshold)
+                                       low, high, num, ref_threshold)
 
     for key in bias_report:
         data = bias_report[key]
@@ -456,6 +457,7 @@ def plot_kdes(labels=None,
         sns.kdeplot(df.loc[df.label == lab].result,
                     shade=False, label=lab, ax=ax[1],
                     cumulative=True, **kwargs)
+
     ax0_max_y = max([max(i.get_data()[1]) for i in ax[0].get_lines()])
     ax[0].set_ylim(0, ax0_max_y*1.1)
     plt.show()
