@@ -144,6 +144,9 @@ def crosstab_bayes_factor(ctab, prior=None):
         0.26162148804907587
 
     """
+    if isinstance(ctab, pd.DataFrame):
+        ctab = ctab.values
+
     if prior is None:
         prior = np.ones(shape=ctab.shape)
 
