@@ -11,6 +11,12 @@ from .utils.crosstabs import (crosstab_bayes_factor,
 from .utils.validate import boolean_array, check_consistent_length
 
 
+def default_thresh_value(results):
+    if len(set(results)) == 2:
+        return np.mean(list(set(results)))
+    return np.median(results)
+
+
 def anova(labels, results, subset_labels=None):
     """
     Returns one-way ANOVA f-statistic and p-value from
@@ -66,7 +72,7 @@ def bias_test_check(labels, results, category=None, test_thresh=None, **kwargs):
     print statement indicating whether specific statistical tests pass or fail
     """
     if test_thresh is None:
-        test_thresh = np.median(results)
+        test_thresh = default_thresh_value(results)
 
     min_props, z_ps, fisher_ps, chi_ps, bfs = compare_groups(
         labels, results, low=test_thresh, num=1, **kwargs)
