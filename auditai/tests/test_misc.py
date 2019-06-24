@@ -1,20 +1,78 @@
 import unittest
+import io
+import sys
 
-from auditai.misc import compare_groups
+from auditai import misc
 
 
 class TestMisc(unittest.TestCase):
     def setUp(self):
-        self.labels = [0, 0, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 1]
-        self.results = [0.16540, 0.09153, 0.70881, 0.82012,
-                        0.16622, 0.69941, 0.31745, 0.72577,
-                        0.71889, 0.30512, 0.87571, 0.01221,
-                        0.79433, 0.12108, 0.41547, 0.25132]
+        self.labels = [0, 0, 0, 0,
+                       1, 1, 1, 1, 1, 1]
+        self.results = [0.25, 0.25, 0.75, 0.75,
+                        0.25, 0.25, 0.25, 0.75, 0.75, 0.75]
 
-    def test_compare_groups(self):
-        for i in range(1, 10):
-            thresh = i/10
-            statistics = [j.get(thresh) for j in
-                          compare_groups(self.labels, self.results, low=thresh,
-                                         num=1)]
-            self.assertTrue(len(statistics) == 5)
+    def test_bias_test_check_all_pass(self):
+
+        capturedOutput = io.StringIO()
+        sys.stdout = capturedOutput
+
+        misc.bias_test_check(self.labels, self.results, category='test_group')
+
+        sys.stdout = sys.__stdout__
+
+        expected_output = """
+            *test_group passes 4/5 test at 0.50*
+            *test_group passes Fisher exact test at 0.50*
+            *test_group passes Chi squared test at 0.50*
+            *test_group passes z test at 0.50*
+            *test_group passes Bayes Factor test at 0.50*
+            """
+        self.assertEqual(' '.join(expected_output.split()),
+                         ' '.join(capturedOutput.getvalue().split()))
+
+    def test_bias_test_check_below_min_thresh(self):
+
+        capturedOutput = io.StringIO()
+        sys.stdout = capturedOutput
+
+        misc.bias_test_check(self.labels, self.results, category='test_group',
+                             test_thresh=0.20)
+
+        sys.stdout = sys.__stdout__
+
+        expected_output = """
+            Unable to run 4/5 test
+            Unable to run Fisher exact test
+            Unable to run Chi squared test
+            Unable to run z test
+            Unable to run Bayes Factor test
+            """
+        self.assertEqual(' '.join(expected_output.split()),
+                         ' '.join(capturedOutput.getvalue().split()))
+
+    def test_bias_test_completely_bias(self):
+        labels = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+        results = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
+
+        capturedOutput = io.StringIO()
+        sys.stdout = capturedOutput
+
+        misc.bias_test_check(labels, results, category='test_group',
+                             test_thresh=0.50)
+
+        sys.stdout = sys.__stdout__
+
+        expected_output = """
+            Unable to run 4/5 test
+            *test_group fails Fisher exact test at 0.50*
+             - test_group minimum proportion at 0.50: 0.005
+            *test_group fails Chi squared test at 0.50*
+             - test_group minimum proportion at 0.50: 0.012
+            *test_group fails z test at 0.50*
+             - test_group minimum proportion at 0.50: 0.002
+            *test_group fails Bayes Factor test at 0.50*
+             - test_group minimum proportion at 0.50: 88.846
+            """
+        self.assertEqual(' '.join(expected_output.split()),
+                         ' '.join(capturedOutput.getvalue().split()))
