@@ -97,7 +97,7 @@ def bias_test_check(labels, results, category=None, test_thresh=None, **kwargs):
         stat_value = test['results'].get(test_thresh)
         if stat_value and not test['check'](stat_value):
             print('*%s passes %s test at %.2f*' % (category, name, test_thresh))
-        elif stat_value:
+        elif stat_value is not None:
             print("*%s fails %s test at %.2f*" % (category, name, test_thresh))
             print(" - %s minimum proportion at %.2f: %.3f" %
                   (category, test_thresh, stat_value))
