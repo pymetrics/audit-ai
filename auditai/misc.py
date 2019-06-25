@@ -11,6 +11,12 @@ from .utils.crosstabs import (crosstab_bayes_factor,
 from .utils.validate import boolean_array, check_consistent_length
 
 
+def default_thresh_value(results):
+    if len(set(results)) == 2:
+        return np.mean(list(set(results)))
+    return np.median(results)
+
+
 def anova(labels, results, subset_labels=None):
     """
     Returns one-way ANOVA f-statistic and p-value from
@@ -66,50 +72,37 @@ def bias_test_check(labels, results, category=None, test_thresh=None, **kwargs):
     print statement indicating whether specific statistical tests pass or fail
     """
     if test_thresh is None:
-        test_thresh = np.median(results)
+        test_thresh = default_thresh_value(results)
 
     min_props, z_ps, fisher_ps, chi_ps, bfs = compare_groups(
         labels, results, low=test_thresh, num=1, **kwargs)
 
     # if no category is specified, concatenate strings
     if category is None:
-        category = '_vs_'.join(set(labels))[:20]
+        category = '_vs_'.join([str(i) for i in set(labels)])[:20]
     # test if passes at test_thresh
-    passes_all = True
-    if min_props[test_thresh] < .8:
-        passes_all = False
-        print("*%s fails 4/5 test at %.2f*" % (category, test_thresh))
-        print(" - %s minimum proportion at %.2f: %.3f" %
-              (category, test_thresh, min_props[test_thresh]))
+    bias_tests = {'4/5': {'results': min_props,
+                          'check': lambda x: x < 0.8},
+                  'Fisher exact': {'results': fisher_ps,
+                                   'check': lambda x: x < 0.05},
+                  'Chi squared': {'results': chi_ps,
+                                  'check': lambda x: x < 0.05},
+                  'z': {'results': z_ps,
+                        'check': lambda x: x < 0.05},
+                  'Bayes Factor': {'results': bfs,
+                                   'check': lambda x: x > 3.}
+                  }
 
-    if fisher_ps[test_thresh] < .05:
-        passes_all = False
-        print("*%s fails Fisher exact test at %.2f*" % (category, test_thresh))
-        print("  - %s p-value at %.2f: %.3f" %
-              (category, test_thresh, fisher_ps[test_thresh]))
-
-    if chi_ps[test_thresh] < .05:
-        passes_all = False
-        print("*%s fails Chi squared test at %.2f*" % (category, test_thresh))
-        print("  - %s p-value at %.2f: %.3f" %
-              (category, test_thresh, chi_ps[test_thresh]))
-
-    if z_ps[test_thresh] < .05:
-        passes_all = False
-        print("*%s fails z test at %.2f*" % (category, test_thresh))
-        print("  - %s Z-test p-value at %.2f: %.3f" %
-              (category, test_thresh, z_ps[test_thresh]))
-
-    if bfs[test_thresh] > 3.:
-        passes_all = False
-        print("*%s Bayes Factor test at %.2f*" % (category, test_thresh))
-        print("  - %s Bayes Factor at %.2f: %.3f" %
-              (category, test_thresh, bfs[test_thresh]))
-
-    if passes_all:
-        print("*%s passes 4/5 test, Fisher p-value, Chi-Squared p-value, "
-              "z-test p-value and Bayes Factor at %.2f*\n"
-              % (category, test_thresh))
+    for name, test in bias_tests.items():
+        stat_value = test['results'].get(test_thresh)
+        if stat_value and not test['check'](stat_value):
+            print('*%s passes %s test at %.2f*' % (category, name, test_thresh))
+        elif stat_value is not None:
+            print("*%s fails %s test at %.2f*" % (category, name, test_thresh))
+            print(" - %s minimum proportion at %.2f: %.3f" %
+                  (category, test_thresh, stat_value))
+        else:
+            print("Unable to run %s test" % name)
 
 
 def make_bias_report(clf, df, feature_names, categories,

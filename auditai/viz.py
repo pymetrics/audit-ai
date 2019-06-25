@@ -435,6 +435,15 @@ def plot_kdes(labels=None,
         df = df.rename(columns={label_col: 'label', result_col: 'result'})
     unique_labels = df.label.dropna().unique()
     nlabels = len(unique_labels)
+
+    # Check if there is a distribution to plot in each group
+    stds = df.groupby('label')[['result']].std()
+    if 0 in stds.values:
+        groups = stds.index[stds['result'] == 0].values
+        print('No distribution of results in groups: %s' %
+              ', '.join([str(i) for i in groups]))
+        return
+
     if not colors:
         base_colors = ['red', 'blue']
         others = list(set(sns.xkcd_rgb.keys()) - set(base_colors))
