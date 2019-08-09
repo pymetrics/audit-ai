@@ -329,8 +329,7 @@ def proportion_test(labels, decisions):
         displays pass rates by `label` group 
         relative to the highest passing group (which itself is always 1.0)
     """
-    assert len(labels) == len(decisions), 'input arrays are not of same length'
-
+    check_consistent_length(labels, decisions)
     decisions = boolean_array(decisions)
     crosstab = pd.crosstab(pd.Series(labels), pd.Series(decisions))
 
