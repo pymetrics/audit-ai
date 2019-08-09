@@ -309,8 +309,44 @@ def compare_groups(labels, results,
     return min_props, z_ps, fisher_ps, chi_ps, bayes_facts
 
 
+def proportion_test(labels, decisions):
+    """
+    Compare rates of passing across groups, 
+    relative to the highest passing group
+
+    Parameters
+    ----------
+    labels : array_like
+        categorical labels for each corresponding value of `decision` ie. M/F
+
+    decisions : array_like
+        binary decision values, ie. True/False, 0/1 or 'pass'/'fail'
+        NB: the 'passing' value must evaluate to greater than the failing value
+
+    Returns
+    ------- 
+    normed_proportions : pd.Series
+        displays pass rates by `label` group 
+        relative to the highest passing group (which itself is always 1.0)
+    """
+    assert len(labels) == len(decisions), 'input arrays are not of same length'
+
+    decisions = boolean_array(decisions)
+    crosstab = pd.crosstab(pd.Series(labels), pd.Series(decisions))
+
+    # require crosstab not to be one-dimensional (e.g. one kind of label)
+    if 1 in crosstab.shape:
+        raise ValueError('One-dimensional data has no proportions')
+
+    normed_ctabs = crosstab.div(ctabs.sum(axis=1), axis=0)
+    true_val = max(set(decisions))
+    max_group = normed_ctabs[true_val].max()
+    normed_proportions = normed_ctabs[true_val] / max_group
+    return normed_proportions
+
+
 def test_multiple(labels, decisions,
-                  tests=('ztest', 'fisher', 'chi2', 'BF'), display=False):
+                  tests=('ztest', 'fisher', 'chi2', 'BF', 'prop'), display=False):
     """
     Function that returns p_values for z-score, fisher exact, and chi2 test
     of 2x2 crosstab of passing rate by labels and decisions
@@ -333,6 +369,7 @@ def test_multiple(labels, decisions,
         -fisher: p-value for Fisher's exact test for proportions
         -chi2: p-value for chi-squared test of independence for proportions
         -bayes: bayes factor for independence assuming uniform prior
+        -prop: proportion of lowest to highest passing rates by group
 
     display : bool
         print the results of each test in addition to returning them
@@ -341,7 +378,7 @@ def test_multiple(labels, decisions,
     -------
     results : dict
         dictionary of values, one for each test.
-        Valid keys are: 'z_score', 'fisher_p', 'chi2_p', and 'BF'
+        Valid keys are: 'z_score', 'fisher_p', 'chi2_p', 'BF', and 'prop'
 
     Examples
     --------
@@ -391,6 +428,8 @@ def test_multiple(labels, decisions,
         results['chi2_p'] = chi2_contingency(crosstab)[:2]
     if 'BF' in tests:
         results['BF'] = crosstab_bayes_factor(crosstab)
+    if 'prop' in tests:
+        results['prop'] = min(proportion_test(labels, decisions))
 
     if display:
         for key in results:
