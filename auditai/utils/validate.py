@@ -62,16 +62,22 @@ class ClassifierWrapper(object):
                 'Classifier has no decision_function or predict_proba')
 
 
-def check_array(array, all_finite=True, allow_bool=True):
-    """
-    make it what we want
-    """
-    # do things...
-
-    return np.array(array)
-
-
 def boolean_array(array, threshold=None):
+    """
+    Converts a numpy array of integers into True/False values.
+    If there are more than 2 unique values, a threshold must be supplied
+
+    Parameters
+    -----------
+    array : numpy array
+        an array of integers
+    threshold : integer
+        a threshold to apply to an array of values
+
+    Returns
+    ---------
+    array : list of boolean values
+    """
     if not isinstance(array, np.ndarray):
         raise TypeError("Expected numpy array, got %s" % type(array))
 

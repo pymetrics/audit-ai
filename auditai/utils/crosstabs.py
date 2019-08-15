@@ -4,7 +4,7 @@ Collection of functions to create and manipulate cross tabulations
 import numpy as np
 import pandas as pd
 
-from .functions import _ztest, _odds_ratio, dirichln
+from .general import two_tailed_ztest, dirichln
 
 
 def crosstab_df(labels, decisions):
@@ -198,14 +198,10 @@ def crosstab_odds_ratio(ctab):
         min_idx = np.argmin(tab_ratios)
         ctab = ctab[:, [min_idx, max_idx]]
 
-    a_n = ctab[0, 0]
-    a_p = ctab[0, 1]
-    b_n = ctab[1, 0]
-    b_p = ctab[1, 1]
+    a_ratio = float(ctab[0, 0]) / ctab[0, 1]
+    b_ratio = float(ctab[1, 0]) / ctab[1, 1]
 
-    oddsratio = _odds_ratio(a_n, a_p, b_n, b_p)
-
-    return oddsratio
+    return a_ratio / b_ratio
 
 
 def crosstab_ztest(ctab):
@@ -230,5 +226,5 @@ def crosstab_ztest(ctab):
     n2 = ctab[1].sum()
     pos1 = ctab[0, 1]
     pos2 = ctab[1, 1]
-    zstat, p_value = _ztest(pos1, pos2, n1, n2)
+    zstat, p_value = two_tailed_ztest(pos1, pos2, n1, n2)
     return zstat, p_value

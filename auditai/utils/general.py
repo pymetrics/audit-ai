@@ -3,7 +3,7 @@ from scipy.stats import norm
 from scipy.special import gammaln
 
 
-def _ztest(success1, success2, total1, total2):
+def two_tailed_ztest(success1, success2, total1, total2):
     """
     Two-tailed z score for proportions
 
@@ -24,7 +24,9 @@ def _ztest(success1, success2, total1, total2):
     Returns
     -------
     zstat : float
-        test statistic for two tailed z-test
+        z score for two tailed z-test
+    p_value : float
+        p value for two tailed z-test
     """
     p1 = success1 / float(total1)
     p2 = success2 / float(total2)
@@ -42,35 +44,54 @@ def _ztest(success1, success2, total1, total2):
     return zstat, p_value
 
 
-def _odds_ratio(a_n, a_p, b_n, b_p):
-    """
-    doc it
-    """
-    a_ratio = float(a_n) / a_p
-    b_ratio = float(b_n) / b_p
-    return a_ratio / b_ratio
-
-
-def dirichln(a):
+def dirichln(arr):
     """
     Dirichlet gamma function
     Albert (2007) Bayesian Computation with R, 1st ed., pg 178
 
     Parameters
     ----------
-    a : array or matrix of float values
+    arr : array or matrix of float values
 
     Returns
     -------
     val : float or array,
         logged Dirichlet transformed value if array or matrix
     """
-    val = np.sum(gammaln(a)) - gammaln(np.sum(a))
+    val = np.sum(gammaln(arr)) - gammaln(np.sum(arr))
     return val
 
 
 def get_unique_name(new_name, name_list, addendum='_new'):
-    """Utility function for returning a name not contained in a list"""
+    """
+    Utility function to return a new unique name if name is in list.
+
+    Parameters
+    ----------
+    new_name : string
+        name to be updated
+    name_list: list
+        list of existing names
+    addendum: string
+        addendum appended to new_name if new_name is in name_list
+
+    Returns
+    -------
+    new_name : string,
+        updated name
+
+    Example
+    -------
+    new_name = 'feat1'
+    name_list = ['feat1', 'feat2']
+
+    first iteration: new_name returned = 'feat1_new'
+    now with name_list being updated to include new feature:
+        name_list = ['feat1', 'feat2', 'feat1_new']
+
+    second iteration: new_name returned = 'feat1_new_new'
+    """
+    # keep appending "new" until new_name is not in list
     while new_name in name_list:
         new_name += addendum
     return new_name

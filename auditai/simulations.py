@@ -6,7 +6,7 @@ import pandas as pd
 from scipy import stats
 from scipy.stats import chi2_contingency
 
-from .utils.functions import get_unique_name
+from .utils.general import get_unique_name
 from .utils.validate import ClassifierWrapper
 
 
