@@ -13,8 +13,8 @@ def crosstab_df(labels, decisions):
     ------------
     labels : array_like
         containing categorical values like ['M', 'F']
-    scores : array_like
-        containing real numbers
+    decisions : array_like
+        containing boolean / binary values
 
     Returns
     --------
