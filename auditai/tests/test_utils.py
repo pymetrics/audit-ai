@@ -22,7 +22,7 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(output, (-2.58, 0.01))
 
     def dirichln(self):
-        output = round(dirichln([1,2]), 2)
+        output = round(dirichln([1, 2]), 2)
         self.assertEqual(output, -0.69)
 
         output = round(dirichln([1]), 2)
