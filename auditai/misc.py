@@ -311,7 +311,7 @@ def compare_groups(labels, results,
 
 def proportion_test(labels, decisions):
     """
-    Compare rates of passing across groups, 
+    Compare rates of passing across groups,
     relative to the highest passing group
 
     Parameters
@@ -324,9 +324,9 @@ def proportion_test(labels, decisions):
         NB: the 'passing' value must evaluate to greater than the failing value
 
     Returns
-    ------- 
+    -------
     normed_proportions : pd.Series
-        displays pass rates by `label` group 
+        displays pass rates by `label` group
         relative to the highest passing group (which itself is always 1.0)
     """
     check_consistent_length(labels, decisions)
@@ -337,7 +337,7 @@ def proportion_test(labels, decisions):
     if 1 in crosstab.shape:
         raise ValueError('One-dimensional data has no proportions')
 
-    normed_ctabs = crosstab.div(ctabs.sum(axis=1), axis=0)
+    normed_ctabs = crosstab.div(crosstab.sum(axis=1), axis=0)
     true_val = max(set(decisions))
     max_group = normed_ctabs[true_val].max()
     normed_proportions = normed_ctabs[true_val] / max_group
