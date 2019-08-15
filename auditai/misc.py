@@ -347,7 +347,8 @@ def proportion_test(labels, decisions):
 
 
 def test_multiple(labels, decisions,
-                  tests=('ztest', 'fisher', 'chi2', 'BF', 'prop'), display=False):
+                  tests=('ztest', 'fisher', 'chi2', 'BF', 'prop'),
+                  display=False):
     """
     Function that returns p_values for z-score, fisher exact, and chi2 test
     of 2x2 crosstab of passing rate by labels and decisions
