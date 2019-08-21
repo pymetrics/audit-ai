@@ -545,7 +545,7 @@ def one_way_mi(df, feature_list, group_column, y_var):
         mi_y = mutual_info_score(None, None, contingency=c_y)
 
         # save results
-        mi_table.loc[x] = [t, mi_g, mi_y]
+        mi_table.loc[x] = [t, mi_y, mi_g]
         x = x + 1
 
     # set up columns where the highest MI is scaled to 1
