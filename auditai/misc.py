@@ -3,6 +3,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2_contingency, fisher_exact, f_oneway
+from sklearn.metrics import mutual_info_score
 
 from .simulations import classifier_posterior_probabilities
 from .utils.crosstabs import (crosstab_bayes_factor,
@@ -496,3 +497,61 @@ def quick_bias_check(clf, df, feature_names, categories, thresh_pct=80,
     passed = all(np.array(min_max_ratios) >= pass_ratio)
     min_bias_ratio = min(min_max_ratios)
     return passed, bias_report, min_bias_ratio
+
+
+def one_way_mi(df, feature_list, group_column, y_var):
+
+    """
+    Calculates one-way mutual information group variable and a
+    target variable (y) given a feature list regarding.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+         df with features used to train model, plus a target variable
+         and a group column.
+    feature_list : list DataFrame
+                   List of strings, feature names.
+    group_column : string
+                   name of column for testing bias, should contain
+                   numeric categories
+    y_var : string
+            name of target variable column
+
+    Returns
+    -------
+    mi_table : pandas DataFrame
+               data frame with mutual information values, with one row per
+               feature in the feature_list, columns for group and y.
+    """
+
+    group_cats = df[group_column].values
+    y_cats = np.array(df[y_var])
+
+    # set up data frame to receive results
+    rows = np.arange(0, len(feature_list))
+    mi_table = pd.DataFrame(index=rows, columns=[
+                            'feature', 'y', 'group'])
+    x = 0
+
+    for t in feature_list:
+        c_g = np.histogramdd(
+            [np.array(df[t]), group_cats], bins=[9, 2])[0]
+        c_y = np.histogramdd(
+            [np.array(df[t]), y_cats], bins=[9, 2])[0]
+
+        # compute mutual information between trait and gender/eth/y
+        mi_g = mutual_info_score(None, None, contingency=c_g)
+        mi_y = mutual_info_score(None, None, contingency=c_y)
+
+        # save results
+        mi_table.loc[x] = [t, mi_g, mi_y]
+        x = x + 1
+
+    # set up columns where the highest MI is scaled to 1
+    # this is convenient when interpreting relative importance to
+    # bias and performance
+    mi_table['group_scaled'] = mi_table['group'] / mi_table['group'].max()
+    mi_table['y_scaled'] = mi_table['y'] / mi_table['y'].max()
+
+    return mi_table
