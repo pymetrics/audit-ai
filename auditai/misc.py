@@ -499,7 +499,7 @@ def quick_bias_check(clf, df, feature_names, categories, thresh_pct=80,
     return passed, bias_report, min_bias_ratio
 
 
-def one_way_mi(df, feature_list, group_column, y_var):
+def one_way_mi(df, feature_list, group_column, y_var, bins):
 
     """
     Calculates one-way mutual information group variable and a
@@ -511,47 +511,44 @@ def one_way_mi(df, feature_list, group_column, y_var):
          df with features used to train model, plus a target variable
          and a group column.
     feature_list : list DataFrame
-                   List of strings, feature names.
+        List of strings, feature names.
     group_column : string
-                   name of column for testing bias, should contain
-                   numeric categories
+        name of column for testing bias, should contain numeric categories
     y_var : string
-            name of target variable column
+        name of target variable column
+    bins : tuple
+        number of bins for each dimension
 
     Returns
     -------
     mi_table : pandas DataFrame
-               data frame with mutual information values, with one row per
-               feature in the feature_list, columns for group and y.
+        data frame with mutual information values, with one row per feature
+        in the feature_list, columns for group and y.
     """
 
     group_cats = df[group_column].values
-    y_cats = np.array(df[y_var])
+    y_cats = df[y_var].values
 
-    # set up data frame to receive results
-    rows = np.arange(0, len(feature_list))
-    mi_table = pd.DataFrame(index=rows, columns=[
-                            'feature', 'y', 'group'])
-    x = 0
+    c_g = [
+        np.histogramdd([np.array(df[feature]), group_cats], bins=bins)[0]
+        for feature in feature_list
+        ]
+    c_y = [
+        np.histogramdd([np.array(df[feature]), y_cats], bins=bins)[0]
+        for feature in feature_list
+        ]
 
-    for t in feature_list:
-        c_g = np.histogramdd(
-            [np.array(df[t]), group_cats], bins=[9, 2])[0]
-        c_y = np.histogramdd(
-            [np.array(df[t]), y_cats], bins=[9, 2])[0]
+    # compute mutual information (MI) between trait and gender/eth/y
+    mi_g = [mutual_info_score(None, None, contingency=i) for i in c_g]
+    mi_y = [mutual_info_score(None, None, contingency=i) for i in c_y]
+    mi_table = pd.DataFrame({'feature': feature_list,
+                             group_column: mi_g,
+                             y_var: mi_y})
 
-        # compute mutual information between trait and gender/eth/y
-        mi_g = mutual_info_score(None, None, contingency=c_g)
-        mi_y = mutual_info_score(None, None, contingency=c_y)
-
-        # save results
-        mi_table.loc[x] = [t, mi_g, mi_y]
-        x = x + 1
-
-    # set up columns where the highest MI is scaled to 1
-    # this is convenient when interpreting relative importance to
-    # bias and performance
-    mi_table['group_scaled'] = mi_table['group'] / mi_table['group'].max()
-    mi_table['y_scaled'] = mi_table['y'] / mi_table['y'].max()
+    # NOTE: Scale group and y where the highest MI is scaled to 1 to
+    # facilitate interpreting relative importance to bias and performance
+    mi_table[f"{group_column}_scaled"] = (mi_table[group_column] /
+                                          mi_table[group_column].max())
+    mi_table[f"{y_var}_scaled"] = mi_table[y_var] / mi_table[y_var].max()
 
     return mi_table
