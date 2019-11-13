@@ -40,7 +40,8 @@ setup(name='audit-AI',
             'scipy',
             'pandas',
             'matplotlib',
-            'statsmodels'
+            'statsmodels',
+            'sklearn'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],
