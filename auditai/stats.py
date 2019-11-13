@@ -11,7 +11,6 @@ from .utils.crosstabs import (crosstab,
                               get_top_bottom_indices,
                               top_bottom_crosstab)
 from .utils.validate import (check_consistent_length,
-                             check_array,
                              boolean_array)
 from .utils.cmh import (parse_matrix,
                         extract_data)
@@ -43,7 +42,7 @@ def ztest(labels, results, threshold=None):
     """
 
     check_consistent_length(labels, results)
-    results = check_array(results)
+    results = np.array(results)
 
     # convert the results to True/False
     results = boolean_array(results, threshold=threshold)
@@ -83,7 +82,7 @@ def fisher_exact_test(labels, results, threshold=None):
     """
 
     check_consistent_length(labels, results)
-    results = check_array(results)
+    results = np.array(results)
 
     # convert the results to True/False
     results = boolean_array(results, threshold=threshold)
@@ -124,7 +123,7 @@ def chi2_test(labels, results, threshold=None):
     """
 
     check_consistent_length(labels, results)
-    results = check_array(results)
+    results = np.array(results)
 
     # convert the results to True/False
     results = boolean_array(results, threshold=threshold)
@@ -203,7 +202,7 @@ def bayes_factor(labels, results, threshold=None,
         0.00012159518854984268
     """
     check_consistent_length(labels, results)
-    results = check_array(results)
+    results = np.array(results)
 
     # convert the results to True/False
     results = boolean_array(results, threshold=threshold)

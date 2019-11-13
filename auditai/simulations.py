@@ -6,7 +6,7 @@ import pandas as pd
 from scipy import stats
 from scipy.stats import chi2_contingency
 
-from .utils.functions import get_unique_name
+from .utils.general import get_unique_name
 from .utils.validate import ClassifierWrapper
 
 
@@ -371,11 +371,7 @@ def sim_beta_ratio(table, threshold, prior_strength, hyperparam, N):
     p1p2 = p1 / p2
     p2p1 = p2 / p1
 
-    # For fraction of posterior ratios in range [.8, 1.25], get Bayes factor
-    post_prob_null = np.sum((p1p2 >= 0.8) & (p1p2 <= 1.25)) / float(n_sim)
-    bayes_factor = post_prob_null / (1 - post_prob_null)
-
     return [np.mean(p1p2), np.mean(p2p1), np.std(p1p2), np.std(p2p1),
             np.percentile(p1p2, 2.5), np.percentile(p2p1, 2.5),
             np.percentile(p1p2, 97.5), np.percentile(p2p1, 97.5),
-            (post_alpha1, post_beta1), (post_alpha2, post_beta2), bayes_factor]
+            (post_alpha1, post_beta1), (post_alpha2, post_beta2)]

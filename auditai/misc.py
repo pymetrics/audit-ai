@@ -3,6 +3,7 @@ from collections import defaultdict
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2_contingency, fisher_exact, f_oneway
+from sklearn.metrics import mutual_info_score
 
 from .simulations import classifier_posterior_probabilities
 from .utils.crosstabs import (crosstab_bayes_factor,
@@ -50,7 +51,8 @@ def anova(labels, results, subset_labels=None):
     return f_oneway(*score_vectors)
 
 
-def bias_test_check(labels, results, category=None, test_thresh=None, **kwargs):
+def bias_test_check(labels, results, category=None, test_thresh=None,
+                    **kwargs):
     """
     Utility function for checking if statistical tests are passed
     at a reference threshold
@@ -96,7 +98,8 @@ def bias_test_check(labels, results, category=None, test_thresh=None, **kwargs):
     for name, test in bias_tests.items():
         stat_value = test['results'].get(test_thresh)
         if stat_value and not test['check'](stat_value):
-            print('*%s passes %s test at %.2f*' % (category, name, test_thresh))
+            print('*%s passes %s test at %.2f*' % (category, name,
+                                                   test_thresh))
         elif stat_value is not None:
             print("*%s fails %s test at %.2f*" % (category, name, test_thresh))
             print(" - %s minimum proportion at %.2f: %.3f" %
@@ -309,8 +312,44 @@ def compare_groups(labels, results,
     return min_props, z_ps, fisher_ps, chi_ps, bayes_facts
 
 
+def proportion_test(labels, decisions):
+    """
+    Compare rates of passing across groups,
+    relative to the highest passing group
+
+    Parameters
+    ----------
+    labels : array_like
+        categorical labels for each corresponding value of `decision` ie. M/F
+
+    decisions : array_like
+        binary decision values, ie. True/False, 0/1 or 'pass'/'fail'
+        NB: the 'passing' value must evaluate to greater than the failing value
+
+    Returns
+    -------
+    normed_proportions : pd.Series
+        displays pass rates by `label` group
+        relative to the highest passing group (which itself is always 1.0)
+    """
+    check_consistent_length(labels, decisions)
+    decisions = boolean_array(decisions)
+    crosstab = pd.crosstab(pd.Series(labels), pd.Series(decisions))
+
+    # require crosstab not to be one-dimensional (e.g. one kind of label)
+    if 1 in crosstab.shape:
+        raise ValueError('One-dimensional data has no proportions')
+
+    normed_ctabs = crosstab.div(crosstab.sum(axis=1), axis=0)
+    true_val = max(set(decisions))
+    max_group = normed_ctabs[true_val].max()
+    normed_proportions = normed_ctabs[true_val] / max_group
+    return normed_proportions
+
+
 def test_multiple(labels, decisions,
-                  tests=('ztest', 'fisher', 'chi2', 'BF'), display=False):
+                  tests=('ztest', 'fisher', 'chi2', 'BF', 'prop'),
+                  display=False):
     """
     Function that returns p_values for z-score, fisher exact, and chi2 test
     of 2x2 crosstab of passing rate by labels and decisions
@@ -333,6 +372,7 @@ def test_multiple(labels, decisions,
         -fisher: p-value for Fisher's exact test for proportions
         -chi2: p-value for chi-squared test of independence for proportions
         -bayes: bayes factor for independence assuming uniform prior
+        -prop: proportion of lowest to highest passing rates by group
 
     display : bool
         print the results of each test in addition to returning them
@@ -341,7 +381,7 @@ def test_multiple(labels, decisions,
     -------
     results : dict
         dictionary of values, one for each test.
-        Valid keys are: 'z_score', 'fisher_p', 'chi2_p', and 'BF'
+        Valid keys are: 'z_score', 'fisher_p', 'chi2_p', 'BF', and 'prop'
 
     Examples
     --------
@@ -391,6 +431,8 @@ def test_multiple(labels, decisions,
         results['chi2_p'] = chi2_contingency(crosstab)[:2]
     if 'BF' in tests:
         results['BF'] = crosstab_bayes_factor(crosstab)
+    if 'prop' in tests:
+        results['prop'] = min(proportion_test(labels, decisions))
 
     if display:
         for key in results:
@@ -455,3 +497,58 @@ def quick_bias_check(clf, df, feature_names, categories, thresh_pct=80,
     passed = all(np.array(min_max_ratios) >= pass_ratio)
     min_bias_ratio = min(min_max_ratios)
     return passed, bias_report, min_bias_ratio
+
+
+def one_way_mi(df, feature_list, group_column, y_var, bins):
+
+    """
+    Calculates one-way mutual information group variable and a
+    target variable (y) given a feature list regarding.
+
+    Parameters
+    ----------
+    df : pandas DataFrame
+         df with features used to train model, plus a target variable
+         and a group column.
+    feature_list : list DataFrame
+        List of strings, feature names.
+    group_column : string
+        name of column for testing bias, should contain numeric categories
+    y_var : string
+        name of target variable column
+    bins : tuple
+        number of bins for each dimension
+
+    Returns
+    -------
+    mi_table : pandas DataFrame
+        data frame with mutual information values, with one row per feature
+        in the feature_list, columns for group and y.
+    """
+
+    group_cats = df[group_column].values
+    y_cats = df[y_var].values
+
+    c_g = [
+        np.histogramdd([np.array(df[feature]), group_cats], bins=bins)[0]
+        for feature in feature_list
+        ]
+    c_y = [
+        np.histogramdd([np.array(df[feature]), y_cats], bins=bins)[0]
+        for feature in feature_list
+        ]
+
+    # compute mutual information (MI) between trait and gender/eth/y
+    mi_g = [mutual_info_score(None, None, contingency=i) for i in c_g]
+    mi_y = [mutual_info_score(None, None, contingency=i) for i in c_y]
+    mi_table = pd.DataFrame({'feature': feature_list,
+                             group_column: mi_g,
+                             y_var: mi_y})
+
+    # NOTE: Scale group and y where the highest MI is scaled to 1 to
+    # facilitate interpreting relative importance to bias and performance
+    mi_table[f"{group_column}_scaled"] = (mi_table[group_column] /
+                                          mi_table[group_column].max())
+    mi_table[f"{y_var}_scaled"] = mi_table[y_var] / mi_table[y_var].max()
+
+    return mi_table

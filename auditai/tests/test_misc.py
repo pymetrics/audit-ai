@@ -2,6 +2,7 @@ import unittest
 import io
 import sys
 import re
+import pandas as pd
 
 from auditai import misc
 
@@ -69,3 +70,27 @@ class TestMisc(unittest.TestCase):
         pass_cnt, fail_cnt = pass_fail_count(capturedOutput.getvalue())
         self.assertEqual(pass_cnt, 0)
         self.assertEqual(fail_cnt, 5)
+
+    def test_one_way_mi(self):
+        df = pd.DataFrame({'feat1': [1, 2, 3, 2, 1],
+                           'feat2': [3, 2, 1, 2, 3],
+                           'feat3': [1, 2, 3, 2, 1],
+                           'feat4': [1, 2, 3, 2, 1],
+                           'group': [1, 1, 3, 4, 5],
+                           'y':     [1, 2, 1, 1, 2]})
+        expected_output = {
+            'feature': {0: 'feat1', 1: 'feat2', 2: 'feat3', 3: 'feat4'},
+            'group': {0: 0.12, 1: 0.12, 2: 0.12, 3: 0.12},
+            'group_scaled': {0: 1.0, 1: 1.0, 2: 1.0, 3: 1.0},
+            'y': {0: 0.12, 1: 0.12, 2: 0.12, 3: 0.12},
+            'y_scaled': {0: 1.0, 1: 1.0, 2: 1.0, 3: 1.0}}
+
+        features = ['feat1', 'feat2', 'feat3', 'feat4']
+        group_column = 'group'
+        y_var = 'y'
+
+        output = misc.one_way_mi(df, features, group_column, y_var, (4, 2))
+        for col in [group_column, y_var,
+                    group_column+'_scaled', y_var+'_scaled']:
+            output[col] = output[col].round(2)
+        self.assertEqual(output.to_dict(), expected_output)
