@@ -1,5 +1,6 @@
 import unittest
 import mock
+import os
 
 from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
@@ -35,7 +36,9 @@ class TestBiasBarPlot(unittest.TestCase):
 
 class TestGetBiasPlots(unittest.TestCase):
     def setUp(self):
-        self.data = pd.read_csv('../data/GermanCreditData.csv')
+        data_path = os.path.join(os.path.dirname(__file__), '..', '..',
+                                 'data', 'GermanCreditData.csv')
+        self.data = pd.read_csv(data_path)
         self.features = ['age',
                          'duration',
                          'amount',

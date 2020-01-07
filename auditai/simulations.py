@@ -297,8 +297,8 @@ def generate_bayesfactors(clf, df, feature_names, categories,
                     sorted_df.loc[mask, matched_col]
                 ).values
 
-                feat_sim = sim_beta_ratio(ct_table, thresh,
-                                          prior_strength, hyperparam, N)
+                feat_sim = sim_beta_ratio(ct_table, thresh, prior_strength,
+                                          hyperparam, N, return_bayes=True)
 
                 # alphabetize out_string
                 sorted_combo = sorted([str(v1), str(v2)])
@@ -314,7 +314,8 @@ def generate_bayesfactors(clf, df, feature_names, categories,
     return thresholds_to_check, ratio_probs, N
 
 
-def sim_beta_ratio(table, threshold, prior_strength, hyperparam, N):
+def sim_beta_ratio(table, threshold, prior_strength, hyperparam, N,
+                   return_bayes=False):
     """
     Calculates simulated ratios of match probabilites using a beta
     distribution and returns corresponding means and 95% credible
@@ -381,11 +382,19 @@ def sim_beta_ratio(table, threshold, prior_strength, hyperparam, N):
     p1p2 = p1 / p2
     p2p1 = p2 / p1
 
-    # For fraction of posterior ratios in range [.8, 1.25], get Bayes factor
-    post_prob_null = np.sum((p1p2 >= 0.8) & (p1p2 <= 1.25)) / float(n_sim)
-    bayes_factor = post_prob_null / (1 - post_prob_null)
+    sim_beta_ratio_metrics = [np.mean(p1p2), np.mean(p2p1),
+                              np.std(p1p2), np.std(p2p1),
+                              np.percentile(p1p2, 2.5),
+                              np.percentile(p2p1, 2.5),
+                              np.percentile(p1p2, 97.5),
+                              np.percentile(p2p1, 97.5),
+                              (post_alpha1, post_beta1),
+                              (post_alpha2, post_beta2)]
 
-    return [np.mean(p1p2), np.mean(p2p1), np.std(p1p2), np.std(p2p1),
-            np.percentile(p1p2, 2.5), np.percentile(p2p1, 2.5),
-            np.percentile(p1p2, 97.5), np.percentile(p2p1, 97.5),
-            (post_alpha1, post_beta1), (post_alpha2, post_beta2), bayes_factor]
+    if return_bayes:
+        # Return bayes factor for % of posterior ratios in range [.8, 1.25]
+        post_prob_null = np.sum((p1p2 >= 0.8) & (p1p2 <= 1.25)) / float(n_sim)
+        bayes_factor = post_prob_null / (1 - post_prob_null)
+        sim_beta_ratio_metrics.append(bayes_factor)
+
+    return sim_beta_ratio_metrics
