@@ -193,7 +193,7 @@ def bias_bar_plot(clf=None, df=None, feature_names=None,
 
     for key in bias_report:
         data = bias_report[key]
-        errs = map(lambda i: (i[1] - i[0]) / 2., data['errors'])
+        errs = list(map(lambda i: (i[1] - i[0]) / 2., data['errors']))
         labels = data['categories']
         avgs = data['averages']
         ind = np.arange(len(labels))
