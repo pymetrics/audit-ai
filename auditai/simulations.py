@@ -195,8 +195,9 @@ def get_bias_chi2_pvals(clf, df, feature_names, categories,
 
 
 def generate_bayesfactors(clf, df, feature_names, categories,
-                          prior_strength='', hyperparam=(1, 1, 1, 1),
-                          N=1000, low=None, high=None, num=100):
+                          prior_strength='', threshold=None,
+                          hyperparam=(1, 1, 1, 1),
+                          N=1000, low=.01, high=.99, num=99):
     """
     Function to check demographic bias of clf with reference to
     dataframe containing labeled features. Decision functions for test
@@ -224,6 +225,8 @@ def generate_bayesfactors(clf, df, feature_names, categories,
         names of categories to test for bias, e.g. ['gender', ...]
     prior_strength : string from {'weak', 'strong', 'uniform'}
         prior distribution to be 'informative'/'noninformative'/'uniform'
+    threshold : float
+        single decision threshold at which to evaluate bias
     hyperparam : tuple (alpha1, beta1, alpha2, beta2)
         optional manual input of hyperparameters
     N : int
@@ -257,14 +260,19 @@ def generate_bayesfactors(clf, df, feature_names, categories,
     else:
         sorted_df = df.reindex(df.sort('decision', ascending=False).index)
 
-    # define range of values to test over if not inputted
-    if low is None:
-        low = df.decision.min()
-    if high is None:
-        high = df.decision.max()
+    # allow for testing at optional single threshold instead of range:
+    if threshold is not None:
+        low = high = threshold
+        num = 1
 
     n_samples = sorted_df.shape[0]
     thresholds_to_check = np.linspace(low, high, num)
+
+    # raise ValueError if there is a threshold where everyone would pass/fail
+    if 0.0 in thresholds_to_check:
+        raise ValueError(f'Only passing values at a thresh of 0, increase low')
+    if 1.0 in thresholds_to_check:
+        raise ValueError(f'Only failing values at thresh of 1, decrease high')
 
     ratio_probs = defaultdict(list)
 
@@ -289,22 +297,25 @@ def generate_bayesfactors(clf, df, feature_names, categories,
                     sorted_df.loc[mask, matched_col]
                 ).values
 
-                feat_sim = sim_beta_ratio(ct_table, thresh,
-                                          prior_strength, hyperparam, N)
-                if v1 > v2:
-                    out_string = "%s over %s" % (str(v2), str(v1))
-                    ratio_probs[out_string] = OrderedDict()
-                    ratio_probs[out_string][thresh] = feat_sim
+                feat_sim = sim_beta_ratio(ct_table, thresh, prior_strength,
+                                          hyperparam, N, return_bayes=True)
 
-                else:
-                    out_string = "%s over %s" % (str(v1), str(v2))
-                    ratio_probs[out_string] = OrderedDict()
-                    ratio_probs[out_string][thresh] = feat_sim
+                # alphabetize out_string
+                sorted_combo = sorted([str(v1), str(v2)])
+                out_string = "%s: %s over %s" % (str(category),
+                                                 sorted_combo[0],
+                                                 sorted_combo[1])
+                # first occurence gets an OrderedDict but others call the
+                # existing ratio_probs
+                ratio_probs[out_string] = ratio_probs.get(out_string,
+                                                          OrderedDict())
+                ratio_probs[out_string][thresh] = feat_sim
 
     return thresholds_to_check, ratio_probs, N
 
 
-def sim_beta_ratio(table, threshold, prior_strength, hyperparam, N):
+def sim_beta_ratio(table, threshold, prior_strength, hyperparam, N,
+                   return_bayes=False):
     """
     Calculates simulated ratios of match probabilites using a beta
     distribution and returns corresponding means and 95% credible
@@ -371,7 +382,19 @@ def sim_beta_ratio(table, threshold, prior_strength, hyperparam, N):
     p1p2 = p1 / p2
     p2p1 = p2 / p1
 
-    return [np.mean(p1p2), np.mean(p2p1), np.std(p1p2), np.std(p2p1),
-            np.percentile(p1p2, 2.5), np.percentile(p2p1, 2.5),
-            np.percentile(p1p2, 97.5), np.percentile(p2p1, 97.5),
-            (post_alpha1, post_beta1), (post_alpha2, post_beta2)]
+    sim_beta_ratio_metrics = [np.mean(p1p2), np.mean(p2p1),
+                              np.std(p1p2), np.std(p2p1),
+                              np.percentile(p1p2, 2.5),
+                              np.percentile(p2p1, 2.5),
+                              np.percentile(p1p2, 97.5),
+                              np.percentile(p2p1, 97.5),
+                              (post_alpha1, post_beta1),
+                              (post_alpha2, post_beta2)]
+
+    if return_bayes:
+        # Return bayes factor for % of posterior ratios in range [.8, 1.25]
+        post_prob_null = np.sum((p1p2 >= 0.8) & (p1p2 <= 1.25)) / float(n_sim)
+        bayes_factor = post_prob_null / (1 - post_prob_null)
+        sim_beta_ratio_metrics.append(bayes_factor)
+
+    return sim_beta_ratio_metrics
