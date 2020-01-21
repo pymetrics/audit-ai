@@ -101,6 +101,8 @@ For vizualization:
 
 # How to use this package:
 
+See our implementation paper here: https://github.com/pymetrics/audit-ai/blob/master/examples/implementation_suggestions.md
+
 ```python
 
 from auditai.misc import bias_test_check
