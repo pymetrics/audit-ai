@@ -10,12 +10,12 @@ def _num_samples(x):
         if hasattr(x, '__array__'):
             x = np.asarray(x)
         else:
-            raise TypeError("Expected sequence or array_like, got %s" %
-                            type(x))
+            raise TypeError("Expected sequence or array_like, got {}".format(
+                            type(x)))
     if hasattr(x, 'shape'):
         if len(x.shape) == 0:
-            raise TypeError("Singleton array %r cannot be considered"
-                            " a valid collection." % x)
+            raise TypeError("Singleton array {} cannot be considered"
+                            " a valid collection.".format(x))
         return x.shape[0]
     else:
         return len(x)
@@ -36,7 +36,7 @@ def check_consistent_length(*arrays):
     uniques = np.unique(lengths)
     if len(uniques) > 1:
         raise ValueError("Found input variables with inconsistent numbers of"
-                         " samples: %r" % [int(l) for l in lengths])
+                         " samples: {}".format([int(l) for l in lengths]))
 
 
 class ClassifierWrapper(object):
@@ -79,14 +79,14 @@ def boolean_array(array, threshold=None):
     array : list of boolean values
     """
     if not isinstance(array, np.ndarray):
-        raise TypeError("Expected numpy array, got %s" % type(array))
+        raise TypeError("Expected numpy array, got {}".format(type(array)))
     if threshold:
         return array >= threshold
     else:
         vals = np.unique(array)
         if vals.shape[0] != 2:
             raise ValueError("Expected 2 unique values when "
-                             "threshold=None, got %d" % vals.shape[0])
+                             "threshold=None, got {}".format(vals.shape[0]))
         max_val = np.max(vals)
         return array == max_val
 

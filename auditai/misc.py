@@ -98,14 +98,15 @@ def bias_test_check(labels, results, category=None, test_thresh=None,
     for name, test in bias_tests.items():
         stat_value = test['results'].get(test_thresh)
         if stat_value and not test['check'](stat_value):
-            print('*%s passes %s test at %.2f*' % (category, name,
-                                                   test_thresh))
+            print('*{} passes {} test at {:.2f}*'.format(
+                category, name, test_thresh))
         elif stat_value is not None:
-            print("*%s fails %s test at %.2f*" % (category, name, test_thresh))
-            print(" - %s minimum proportion at %.2f: %.3f" %
-                  (category, test_thresh, stat_value))
+            print('*{} fails {} test at {:.2f}*'.format(
+                category, name, test_thresh))
+            print(" - {} minimum proportion at {:.2f}: {:.3f}".format(
+                category, test_thresh, stat_value))
         else:
-            print("Unable to run %s test" % name)
+            print("Unable to run {} test".format(name))
 
 
 def make_bias_report(clf, df, feature_names, categories,
@@ -307,8 +308,8 @@ def compare_groups(labels, results,
         bayes_facts[thresh] = bayes_fact
 
     if len(skip_thresholds) > 0 and print_skips:
-        print('One-dimensional thresholds were skipped: %s' % skip_thresholds)
-
+        print('One-dimensional thresholds were skipped: {}'.format(
+            skip_thresholds))
     return min_props, z_ps, fisher_ps, chi_ps, bayes_facts
 
 
@@ -436,7 +437,7 @@ def test_multiple(labels, decisions,
 
     if display:
         for key in results:
-            print("%s: %f" % (key, results[key]))
+            print("{}: {}".format(key, results[key]))
 
     return results
 

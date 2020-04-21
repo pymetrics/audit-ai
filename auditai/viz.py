@@ -41,7 +41,7 @@ def plot_bias_pvals(thresholds, pvals, category, sig_thresh=.05, outpath=None):
     low = np.floor(min(thresholds))
     high = np.ceil(max(thresholds))
 
-    plot_title = 'Bias Chi-Squared p-val tests for %s' % (category)
+    plot_title = 'Bias Chi-Squared p-val tests for {}'.format(category)
 
     plt.figure()
     plt.scatter(thresholds, pvals)
@@ -87,7 +87,7 @@ def plot_bias_test(thresholds, ratios, category, outpath=None):
     low = np.floor(min(thresholds))
     high = np.ceil(max(thresholds))
 
-    plot_title = 'Bias Tests for %s' % (category)
+    plot_title = 'Bias Tests for {}'.format(category)
 
     plt.figure()
     plt.scatter(thresholds, means)
@@ -288,7 +288,8 @@ def plot_threshold_tests(labels, results, category=None, comp_groups=None,
     if category is None:
         category = ' vs '.join(sorted(set(labels)))
 
-    fig.suptitle('Model Statistical Bias Tests %s' % category, fontsize=16)
+    fig.suptitle('Model Statistical Bias Tests {}'.format(category),
+                 fontsize=16)
 
     plt.rc('xtick', labelsize=8)
     plt.rc('ytick', labelsize=8)
@@ -296,14 +297,14 @@ def plot_threshold_tests(labels, results, category=None, comp_groups=None,
     group_name = 'Min-Max Group'
 
     if comp_groups is not None:
-        group_name = '%s vs %s' % (comp_groups[:2])
+        group_name = '{} vs {}'.format(comp_groups[:2])
 
     def _make_metric_plot(ax, input_dict, metric_name, group_name,
                           metric_bound=.05):
         """internal function for making a standalone metrics plot"""
         x_vals, y_vals = zip(*sorted(input_dict.items()))
         ax.plot(x_vals, y_vals, 'o-', c='blue')
-        ax.set_title('%s %s' % (group_name, metric_name), fontsize=14)
+        ax.set_title('{} {}'.format(group_name, metric_name), fontsize=14)
         ax.set_ylabel(metric_name, fontsize=12)
         ax.axhline(metric_bound, c='r', linestyle='--')
         ax.tick_params(labelsize=10)
@@ -315,8 +316,8 @@ def plot_threshold_tests(labels, results, category=None, comp_groups=None,
         """internal function for adding a metrics subplot"""
         x_vals, y_vals = zip(*sorted(input_dict.items()))
         axarr[subplot_no].plot(x_vals, y_vals, 'o-', c='blue')
-        axarr[subplot_no].set_title('%s %s' %
-                                    (group_name, metric_name), fontsize=14)
+        axarr[subplot_no].set_title('{} {}'.format(
+            group_name, metric_name), fontsize=14)
         axarr[subplot_no].set_ylabel(metric_name, fontsize=12)
         axarr[subplot_no].axhline(metric_bound, c='r', linestyle='--')
         if subplot_no == 0:
@@ -383,7 +384,7 @@ def plot_group_proportions(labels, results, category=None, **kwargs):
     plt.ylabel('Fraction of Group Below')
     if not category:
         category = '_vs_'.join(map(str, groups))
-    plt.title("%s Cumulative Pass Rate Below Threshold" % category)
+    plt.title("{} Cumulative Pass Rate Below Threshold".format(category))
     plt.show()
     return ax[0]
 
@@ -440,8 +441,8 @@ def plot_kdes(labels=None,
     stds = df.groupby('label')[['result']].std()
     if 0 in stds.values:
         groups = stds.index[stds['result'] == 0].values
-        print('No distribution of results in groups: %s' %
-              ', '.join([str(i) for i in groups]))
+        print('No distribution of results in groups: {}'.format(
+            ', '.join([str(i) for i in groups])))
         return
 
     if not colors:
@@ -453,8 +454,8 @@ def plot_kdes(labels=None,
     fig, ax = plt.subplots(1, 2, figsize=(16, 6))
     if not category:
         category = '_vs_'.join(map(str, unique_labels))
-    ax[0].set_title("%s KDEs" % category)
-    ax[1].set_title("%s Cumulative KDEs" % category)
+    ax[0].set_title("{} KDEs".format(category))
+    ax[1].set_title("{} Cumulative KDEs".format(category))
     ax[0].set_ylabel('Frequency')
     ax[1].set_ylabel('Group Fraction Below')
     ax[0].set_xlabel('Threshold')

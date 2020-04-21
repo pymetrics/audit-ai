@@ -302,9 +302,8 @@ def generate_bayesfactors(clf, df, feature_names, categories,
 
                 # alphabetize out_string
                 sorted_combo = sorted([str(v1), str(v2)])
-                out_string = "%s: %s over %s" % (str(category),
-                                                 sorted_combo[0],
-                                                 sorted_combo[1])
+                out_string = "{}: {} over {}".format(
+                    str(category), sorted_combo[0], sorted_combo[1])
                 # first occurence gets an OrderedDict but others call the
                 # existing ratio_probs
                 ratio_probs[out_string] = ratio_probs.get(out_string,
