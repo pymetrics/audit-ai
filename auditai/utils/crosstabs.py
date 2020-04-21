@@ -159,6 +159,9 @@ def crosstab_bayes_factor(ctab, prior=None):
     OR = np.ones(I)  # vector of ones for rows
     OC = np.ones(J)  # vector of ones for columns
 
+    if ctab.size != prior.size:
+        raise ValueError("ctab and priors must be of same size")
+
     lbf = dirichln(ctab + prior) + dirichln(ar - (J - 1) * OR) \
         + dirichln(ac - (I - 1) * OC) - dirichln(prior) \
         - dirichln(yr + ar - (J - 1) * OR) - dirichln(yc + ac - (I - 1) * OC)

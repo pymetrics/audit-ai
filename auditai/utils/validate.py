@@ -80,13 +80,8 @@ def boolean_array(array, threshold=None):
     """
     if not isinstance(array, np.ndarray):
         raise TypeError("Expected numpy array, got %s" % type(array))
-
-    if np.unique(array).shape[0] == 2:
-        return array.astype('bool')
-
     if threshold:
         return array >= threshold
-        print(array)
     else:
         vals = np.unique(array)
         if vals.shape[0] != 2:

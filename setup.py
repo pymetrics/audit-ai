@@ -43,10 +43,9 @@ setup(name='audit-AI',
             'statsmodels',
             'sklearn'
       ],
-      test_suite='nose.collector',
-      tests_require=['nose'],
+      tests_require=['pytest-cov'],
       extras_require={
-            'dev': ['nose', 'coverage', 'flake8', 'detox']
+            'dev': ['pytest-cov', 'flake8', 'detox', 'mock']
       },
       classifiers=[
             'Development Status :: 3 - Alpha',

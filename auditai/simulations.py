@@ -270,9 +270,9 @@ def generate_bayesfactors(clf, df, feature_names, categories,
 
     # raise ValueError if there is a threshold where everyone would pass/fail
     if 0.0 in thresholds_to_check:
-        raise ValueError(f'Only passing values at a thresh of 0, increase low')
+        raise ValueError('Only passing values at a thresh of 0, increase low')
     if 1.0 in thresholds_to_check:
-        raise ValueError(f'Only failing values at thresh of 1, decrease high')
+        raise ValueError('Only failing values at thresh of 1, decrease high')
 
     ratio_probs = defaultdict(list)
 

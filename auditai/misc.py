@@ -547,8 +547,11 @@ def one_way_mi(df, feature_list, group_column, y_var, bins):
 
     # NOTE: Scale group and y where the highest MI is scaled to 1 to
     # facilitate interpreting relative importance to bias and performance
-    mi_table[f"{group_column}_scaled"] = (mi_table[group_column] /
-                                          mi_table[group_column].max())
-    mi_table[f"{y_var}_scaled"] = mi_table[y_var] / mi_table[y_var].max()
+    mi_table["{}_scaled".format(group_column)] = (
+        mi_table[group_column] / mi_table[group_column].max()
+    )
+    mi_table["{}_scaled".format(y_var)] = (
+        mi_table[y_var] / mi_table[y_var].max()
+    )
 
     return mi_table

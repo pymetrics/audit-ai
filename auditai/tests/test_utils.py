@@ -21,7 +21,7 @@ class TestUtils(unittest.TestCase):
         output = tuple(round(i, 2) for i in (zstat, p_value))
         self.assertEqual(output, (-2.58, 0.01))
 
-    def dirichln(self):
+    def test_dirichln(self):
         output = round(dirichln([1, 2]), 2)
         self.assertEqual(output, -0.69)
 
