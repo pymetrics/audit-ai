@@ -3,18 +3,14 @@ SHELL := /bin/bash
 build:
 	pip install -e .
 
-dev:
+install-dev: clean
 	pip install -e ".[dev]"
 
-test:
-	python setup.py test
+tests:
+	pytest --cov-config=setup.cfg --cov=auditai --cov-fail-under=65
 
 lint:
 	flake8 ./auditai
-
-coverage:
-	coverage run --source auditai setup.py test
-	coverage report
 
 covhtml:
 	coverage html
@@ -25,15 +21,20 @@ clean:
 	@find ./ -depth -type d -name __pycache__ -exec rm -Rf {} \;
 	@find ./ -type f \( -iname \*.pyc -o -iname \*.pyo -o -iname \*~ \) -delete
 
-test-all: coverage lint
+test-all: tests lint
 
-pubdev: clean
+pubdev: is_newest_version clean
 	python setup.py bdist_wheel
 	twine upload --repository testpypi dist/*
 
-publish: clean
+is_newest_version:
+	python auditai/is_newest_version.py
+
+publish: is_newest_version clean
 	python setup.py bdist_wheel
 	twine upload --repository pypi dist/*
 
+tox_tests:
+	tox
 
-.PHONY: build dev test lint coverage covhtml clean test-all pubdev publish
+.PHONY: build install-dev tests lint coverage covhtml clean test-all pubdev publish

@@ -270,9 +270,9 @@ def generate_bayesfactors(clf, df, feature_names, categories,
 
     # raise ValueError if there is a threshold where everyone would pass/fail
     if 0.0 in thresholds_to_check:
-        raise ValueError(f'Only passing values at a thresh of 0, increase low')
+        raise ValueError('Only passing values at a thresh of 0, increase low')
     if 1.0 in thresholds_to_check:
-        raise ValueError(f'Only failing values at thresh of 1, decrease high')
+        raise ValueError('Only failing values at thresh of 1, decrease high')
 
     ratio_probs = defaultdict(list)
 
@@ -302,9 +302,8 @@ def generate_bayesfactors(clf, df, feature_names, categories,
 
                 # alphabetize out_string
                 sorted_combo = sorted([str(v1), str(v2)])
-                out_string = "%s: %s over %s" % (str(category),
-                                                 sorted_combo[0],
-                                                 sorted_combo[1])
+                out_string = "{}: {} over {}".format(
+                    str(category), sorted_combo[0], sorted_combo[1])
                 # first occurence gets an OrderedDict but others call the
                 # existing ratio_probs
                 ratio_probs[out_string] = ratio_probs.get(out_string,
