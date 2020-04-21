@@ -34,4 +34,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest pytest-cov mock
-        pytest --cov-config=setup.cfg --cov=auditai --cov-fail-under=70
+        pytest --cov-config=setup.cfg --cov=auditai --cov-fail-under=65
