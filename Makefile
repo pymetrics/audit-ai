@@ -7,7 +7,7 @@ install-dev: clean
 	pip install -e ".[dev]"
 
 tests:
-	pytest --cov-config=setup.cfg --cov=auditai --cov-fail-under=65 --cov-report html
+	pytest --cov=auditai --cov-fail-under=65
 
 lint:
 	flake8 ./auditai

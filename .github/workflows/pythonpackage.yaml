@@ -34,5 +34,4 @@ jobs:
     - name: Test with pytest
       run: |
         pip install pytest pytest-cov mock
-        echo "backend: Agg" > ~/.config/matplotlib/matplotlibrc
-        pytest --cov-config=setup.cfg --cov=auditai --cov-fail-under=65
+        pytest --cov-config=setup.cfg --cov=auditai --cov-fail-under=70
