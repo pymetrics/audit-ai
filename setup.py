@@ -45,7 +45,7 @@ setup(name='audit-AI',
       ],
       tests_require=['pytest-cov'],
       extras_require={
-            'dev': ['pytest-cov', 'flake8', 'detox', 'mock']
+            'dev': ['pytest-cov', 'flake8', 'detox', 'mock', 'six']
       },
       classifiers=[
             'Development Status :: 3 - Alpha',

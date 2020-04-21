@@ -1,5 +1,5 @@
 import unittest
-import io
+from six import StringIO
 import sys
 import re
 import pandas as pd
@@ -25,7 +25,7 @@ class TestMisc(unittest.TestCase):
         Testing unbias results.
         Default test_thresh = 0.50 and all tests pass.
         """
-        capturedOutput = io.StringIO()
+        capturedOutput = StringIO()
         sys.stdout = capturedOutput
 
         misc.bias_test_check(self.labels, self.results, category='test_group')
@@ -41,7 +41,7 @@ class TestMisc(unittest.TestCase):
         Testing unbias results at a test_threshold below min(results).
         Unable to run all tests all labels are classified into one group.
         """
-        capturedOutput = io.StringIO()
+        capturedOutput = StringIO()
         sys.stdout = capturedOutput
 
         misc.bias_test_check(self.labels, self.results, category='test_group',
@@ -60,7 +60,7 @@ class TestMisc(unittest.TestCase):
         labels = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
         results = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1]
 
-        capturedOutput = io.StringIO()
+        capturedOutput = StringIO()
         sys.stdout = capturedOutput
 
         misc.bias_test_check(labels, results, category='test_group')

@@ -33,5 +33,5 @@ jobs:
         flake8 auditai --count --exit-zero --max-complexity=11 --max-line-length=127 --statistics
     - name: Test with pytest
       run: |
-        pip install pytest pytest-cov mock
+        pip install pytest pytest-cov mock six
         pytest --cov-config=setup.cfg --cov=auditai --cov-fail-under=65

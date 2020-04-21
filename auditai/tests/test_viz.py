@@ -1,5 +1,7 @@
+import sys
 import unittest
 import mock
+import pytest
 import os
 
 from sklearn.ensemble import RandomForestClassifier
@@ -8,6 +10,7 @@ import pandas as pd
 import auditai.viz as viz
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="requires python3.6+")
 class TestBiasBarPlot(unittest.TestCase):
     def setUp(self):
         self.bias_report = {'ethnicity': {'averages': [0.291, 0.303, 0.317,
@@ -34,6 +37,7 @@ class TestBiasBarPlot(unittest.TestCase):
                           ref_threshold=0.7)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 6), reason="requires python3.6+")
 class TestGetBiasPlots(unittest.TestCase):
     def setUp(self):
         data_path = os.path.join(os.path.dirname(__file__), '..', '..',
