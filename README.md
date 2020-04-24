@@ -1,3 +1,4 @@
+![Python package](https://github.com/pymetrics/audit-ai/workflows/Python%20package/badge.svg)
 # audit-AI
 
 <img src="https://www.pymetrics.com/static/base/img/branding/favicon.ico">
