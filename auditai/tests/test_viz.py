@@ -33,8 +33,11 @@ class TestBiasBarPlot(unittest.TestCase):
     @mock.patch('matplotlib.pyplot.show')
     @mock.patch('matplotlib.pyplot.savefig')
     def test_have_bias_report_case(self, mock_plt_savefig, mock_plt_show):
-        viz.bias_bar_plot(bias_report=self.bias_report,
-                          ref_threshold=0.7)
+        viz.bias_bar_plot(bias_report=self.bias_report)
+
+    def test_bad_input(self):
+        with self.assertRaises(ValueError):
+            viz.bias_bar_plot(bias_report=None, clf=None)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 6), reason="requires python3.6+")

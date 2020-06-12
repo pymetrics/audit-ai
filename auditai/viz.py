@@ -55,7 +55,10 @@ def plot_bias_pvals(thresholds, pvals, category, sig_thresh=.05, outpath=None):
     plt.show()
 
 
-def plot_bias_test(thresholds, ratios, category, outpath=None):
+def plot_bias_test(thresholds, ratios, category, outpath=None, s=None, c=None,
+                   marker=None, cmap=None, norm=None, vmin=None, vmax=None,
+                   alpha=None, linewidths=None, verts=None, edgecolors=None,
+                   **kwargs):
     """
     Plots prediction ratio for different groups across thresholds
     Checks 4/5ths test -- i.e. whether any group passes 20+% more than another
@@ -90,7 +93,8 @@ def plot_bias_test(thresholds, ratios, category, outpath=None):
     plot_title = 'Bias Tests for {}'.format(category)
 
     plt.figure()
-    plt.scatter(thresholds, means)
+    plt.scatter(thresholds, means, s, c, marker, cmap, norm,
+                vmin, vmax, alpha, linewidths, verts, edgecolors)
     plt.plot(thresholds, lowers, '-', color='g')
     plt.plot(thresholds, uppers, '-', color='g')
     plt.axis([low, high, 0, max(2, max(uppers) + 0.1)])
@@ -120,8 +124,9 @@ def get_bias_plots(clf, df, feature_names, categories, **kwargs):
         demographic column names used to test for bias,
         e.g. ['gender', 'ethnicity']
     **kwargs :
-        additional arguments for `generate_bayes_factors` and
-        `get_bias_chi2_pvals`, such as `low`, `high`, `num`, `prior_strength`
+        additional arguments for `generate_bayes_factors`,
+        `get_bias_chi2_pvals`, and `plt.scattter`, 
+        such as `low`, `high`, `num`, `prior_strength`, `s`, `marker`, `cmap`
 
     Returns
     ------------
@@ -138,7 +143,7 @@ def get_bias_plots(clf, df, feature_names, categories, **kwargs):
     )
     keys = sorted(ratios.keys())
     for key in keys:
-        plot_bias_test(thresholds, ratios[key], key)
+        plot_bias_test(thresholds, ratios[key], key, **kwargs)
 
     chi2_thresholds, chi2stat_pvals = get_bias_chi2_pvals(
         clf, df, feature_names, categories, **kwargs
@@ -153,7 +158,6 @@ def bias_bar_plot(clf=None, df=None, feature_names=None,
                   ref_threshold=None, bias_report=None):
     """
     Plot bar plots for overall recommendation by bias group
-    NB: if bias_report is not None, only ref_threshold is also needed
 
     Parameters
     ------------
@@ -180,12 +184,11 @@ def bias_bar_plot(clf=None, df=None, feature_names=None,
     --------
     Bar plot containing recommendations across each bias group
     """
-    if all(kw is None for kw in (clf, df, feature_names, categories,
-                                 bias_report)):
-        raise ValueError('if bias_report is None, other arguments cannot be!')
-
-    if ref_threshold is None:
-        raise ValueError('ref_threshold must be defined')
+    if bias_report is None:
+        if any(kw is None for kw in (clf, df, feature_names, categories,
+                                     ref_threshold)):
+            raise ValueError('if bias_report is None,'
+                             'other arguments cannot be!')
 
     if bias_report is None:
         bias_report = make_bias_report(clf, df, feature_names, categories,
@@ -199,9 +202,9 @@ def bias_bar_plot(clf=None, df=None, feature_names=None,
         ind = np.arange(len(labels))
 
         fig, ax = plt.subplots()
-        ax.bar(ind, avgs, ref_threshold, yerr=errs)
+        ax.bar(ind, avgs, 0.8, yerr=errs)
         ax.set_title(key)
-        ax.set_xticks(ind + ref_threshold // 2)
+        ax.set_xticks(ind + 0.8 // 2)
         ax.set_xticklabels(labels)
         plt.show()
 
