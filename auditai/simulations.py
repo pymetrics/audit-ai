@@ -115,7 +115,7 @@ def classifier_posterior_probabilities(clf, df, feature_names, categories,
 
 
 def get_bias_chi2_pvals(clf, df, feature_names, categories,
-                        low=None, high=None, num=100):
+                        low=None, high=None, num=100, **kwargs):
     """
     Get p-values across a range of decision thresholds
 

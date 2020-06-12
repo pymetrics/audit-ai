@@ -64,3 +64,9 @@ class TestGetBiasPlots(unittest.TestCase):
     def test_use_default_values(self, mock_plt_savefig, mock_plt_show):
         viz.get_bias_plots(self.clf, self.data,
                            self.features, ['under_30', 'is_female'])
+
+    @mock.patch('matplotlib.pyplot.show')
+    @mock.patch('matplotlib.pyplot.savefig')
+    def test_apply_custom_formatting(self, mock_plt_savefig, mock_plt_show):
+        viz.get_bias_plots(self.clf, self.data,
+                           self.features, ['under_30', 'is_female'], s=10)
