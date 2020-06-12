@@ -125,7 +125,7 @@ def get_bias_plots(clf, df, feature_names, categories, **kwargs):
         e.g. ['gender', 'ethnicity']
     **kwargs :
         additional arguments for `generate_bayes_factors`,
-        `get_bias_chi2_pvals`, and `plt.scattter`, 
+        `get_bias_chi2_pvals`, and `plt.scatter`,
         such as `low`, `high`, `num`, `prior_strength`, `s`, `marker`, `cmap`
 
     Returns
