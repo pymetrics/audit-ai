@@ -36,7 +36,7 @@ def check_consistent_length(*arrays):
     uniques = np.unique(lengths)
     if len(uniques) > 1:
         raise ValueError("Found input variables with inconsistent numbers of"
-                         " samples: {}".format([int(l) for l in lengths]))
+                         " samples: {}".format([int(le) for le in lengths]))
 
 
 class ClassifierWrapper(object):

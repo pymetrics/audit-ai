@@ -1,3 +1,4 @@
+import inspect
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -55,10 +56,7 @@ def plot_bias_pvals(thresholds, pvals, category, sig_thresh=.05, outpath=None):
     plt.show()
 
 
-def plot_bias_test(thresholds, ratios, category, outpath=None, s=None, c=None,
-                   marker=None, cmap=None, norm=None, vmin=None, vmax=None,
-                   alpha=None, linewidths=None, verts=None, edgecolors=None,
-                   **kwargs):
+def plot_bias_test(thresholds, ratios, category, outpath=None, **kwargs):
     """
     Plots prediction ratio for different groups across thresholds
     Checks 4/5ths test -- i.e. whether any group passes 20+% more than another
@@ -91,10 +89,13 @@ def plot_bias_test(thresholds, ratios, category, outpath=None, s=None, c=None,
     high = np.ceil(max(thresholds))
 
     plot_title = 'Bias Tests for {}'.format(category)
+    scatter_kwargs = {
+        k: v for k, v in kwargs.items()
+        if k in inspect.getfullargspec(plt.scatter)[0]
+    }
 
     plt.figure()
-    plt.scatter(thresholds, means, s, c, marker, cmap, norm,
-                vmin, vmax, alpha, linewidths, verts, edgecolors)
+    plt.scatter(thresholds, means, **scatter_kwargs)
     plt.plot(thresholds, lowers, '-', color='g')
     plt.plot(thresholds, uppers, '-', color='g')
     plt.axis([low, high, 0, max(2, max(uppers) + 0.1)])
@@ -153,27 +154,13 @@ def get_bias_plots(clf, df, feature_names, categories, **kwargs):
         plot_bias_pvals(chi2_thresholds, chi2_pvals, category)
 
 
-def bias_bar_plot(clf=None, df=None, feature_names=None,
-                  categories=None, low=.01, high=.99, num=99,
-                  ref_threshold=None, bias_report=None):
+def bias_report_plot(bias_report):
     """
     Plot bar plots for overall recommendation by bias group
 
     Parameters
     ------------
-    clf : sklearn clf
-        fitted clf with predict object
-    df : pandas DataFrame
-        reference dataframe containing labeled features to test for bias
-    feature_names : list of strings
-        names of features used in fitting clf
-    categories : list of strings
-        names of categories to test for bias, e.g. ['gender']
-    low, high, num : float, float, int
-        range of values for thresholds
-    ref_threshold : float
-        cutoff value at which to generate plot
-    bias_report: dict, optional
+    bias_report: dict
         output of make_bias_report
 
     Returns
@@ -184,16 +171,6 @@ def bias_bar_plot(clf=None, df=None, feature_names=None,
     --------
     Bar plot containing recommendations across each bias group
     """
-    if bias_report is None:
-        if any(kw is None for kw in (clf, df, feature_names, categories,
-                                     ref_threshold)):
-            raise ValueError('if bias_report is None,'
-                             'other arguments cannot be!')
-
-    if bias_report is None:
-        bias_report = make_bias_report(clf, df, feature_names, categories,
-                                       low, high, num, ref_threshold)
-
     for key in bias_report:
         data = bias_report[key]
         errs = list(map(lambda i: (i[1] - i[0]) / 2., data['errors']))
@@ -209,6 +186,37 @@ def bias_bar_plot(clf=None, df=None, feature_names=None,
         plt.show()
 
     return ax
+
+
+def bias_bar_plot(clf, df, feature_names, categories, **kwargs):
+    """
+    Plot bar plots for overall recommendation by bias group
+
+    Parameters
+    ------------
+    clf : sklearn clf
+        fitted clf with predict object
+    df : pandas DataFrame
+        reference dataframe containing labeled features to test for bias
+    feature_names : list of strings
+        names of features used in fitting clf
+    categories : list of strings
+        names of categories to test for bias, e.g. ['gender']
+    **kwargs : additional arguments for misc.make_bias_report,
+        e.g. low, high, num for defining threshold values
+
+    Returns
+    ------------
+    ax : matplotlib subplot axes
+
+    Plots
+    --------
+    Bar plot containing recommendations across each bias group
+    """
+    bias_report = make_bias_report(clf, df, feature_names, categories,
+                                   **kwargs)
+
+    bias_report_plot(bias_report)
 
 
 def plot_threshold_tests(labels, results, category=None, comp_groups=None,
@@ -300,7 +308,7 @@ def plot_threshold_tests(labels, results, category=None, comp_groups=None,
     group_name = 'Min-Max Group'
 
     if comp_groups is not None:
-        group_name = '{} vs {}'.format(comp_groups[:2])
+        group_name = '{} vs {}'.format(*comp_groups[:2])
 
     def _make_metric_plot(ax, input_dict, metric_name, group_name,
                           metric_bound=.05):
