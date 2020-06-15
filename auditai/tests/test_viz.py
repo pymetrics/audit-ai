@@ -32,9 +32,12 @@ class TestBiasBarPlot(unittest.TestCase):
 
     @mock.patch('matplotlib.pyplot.show')
     @mock.patch('matplotlib.pyplot.savefig')
-    def test_have_bias_report_case(self, mock_plt_savefig, mock_plt_show):
-        viz.bias_bar_plot(bias_report=self.bias_report,
-                          ref_threshold=0.7)
+    def test_bias_report_case(self, mock_plt_savefig, mock_plt_show):
+        viz.bias_report_plot(self.bias_report)
+
+    def test_bad_input(self):
+        with self.assertRaises(TypeError):
+            viz.bias_bar_plot(bias_report=None, clf=None)
 
 
 @pytest.mark.skipif(sys.version_info < (3, 6), reason="requires python3.6+")
@@ -61,3 +64,16 @@ class TestGetBiasPlots(unittest.TestCase):
     def test_use_default_values(self, mock_plt_savefig, mock_plt_show):
         viz.get_bias_plots(self.clf, self.data,
                            self.features, ['under_30', 'is_female'])
+
+    @mock.patch('matplotlib.pyplot.show')
+    @mock.patch('matplotlib.pyplot.savefig')
+    def test_apply_custom_formatting(self, mock_plt_savefig, mock_plt_show):
+        viz.get_bias_plots(self.clf, self.data,
+                           self.features, ['under_30', 'is_female'], s=10)
+
+    @mock.patch('matplotlib.pyplot.show')
+    @mock.patch('matplotlib.pyplot.savefig')
+    def test_ignore_bad_plt_kwargs(self, mock_plt_savefig, mock_plt_show):
+        viz.get_bias_plots(self.clf, self.data,
+                           self.features, ['under_30', 'is_female'], s=10,
+                           bad_kwarg=10)

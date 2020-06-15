@@ -109,8 +109,7 @@ def bias_test_check(labels, results, category=None, test_thresh=None,
             print("Unable to run {} test".format(name))
 
 
-def make_bias_report(clf, df, feature_names, categories,
-                     low=None, high=None, num=100, ref_threshold=None):
+def make_bias_report(clf, df, feature_names, categories, **kwargs):
     """
     Utility function for report dictionary from
     `classifier_posterior_probabilities`. Used for plotting
@@ -126,10 +125,10 @@ def make_bias_report(clf, df, feature_names, categories,
         names of features used in fitting clf
     categories : list of strings
         names of categories to test for bias, e.g. ['gender']
-    low, high, num : float, float, int
-        range of values for thresholds
-    ref_threshold : float
+    ref_threshold : float (optional)
         cutoff value at which to generate metrics
+    **kwargs : optional additional arguments for
+        classifier_posterior_probabilities, specifically low, high, num
 
     Returns
     --------
@@ -140,8 +139,9 @@ def make_bias_report(clf, df, feature_names, categories,
                             'errors': [.1, .1]}
                 }
     """
+    ref_threshold = kwargs.pop("ref_threshold")
     threshes, probs = classifier_posterior_probabilities(
-        df, clf, feature_names, categories, low, high, num)
+        df, clf, feature_names, categories, **kwargs)
 
     # if not specified, set ref_threshold at 80% of max(threshes)
     if ref_threshold is None:
@@ -164,7 +164,7 @@ def make_bias_report(clf, df, feature_names, categories,
     return out_dict
 
 
-def get_group_proportions(labels, results, low=None, high=None, num=100):
+def get_group_proportions(labels, results, **kwargs):
     """
     Returns pass proportions for each group present in labels, according to
     their results
@@ -175,12 +175,14 @@ def get_group_proportions(labels, results, low=None, high=None, num=100):
         contains categorical labels
     results : array_like
         contains numeric or boolean values
-    low : float
-        if None, will default to min(results)
-    high : float
-        if None, will default to max(results)
-    num : int, default 100
-        number of thresholds to check
+    **kwargs : optional
+        additional values for thresholds to test:
+        low : float
+            if None, will default to min(results)
+        high : float
+            if None, will default to max(results)
+        num : int, default 100
+            number of thresholds to check
 
     Returns
     --------
@@ -188,10 +190,9 @@ def get_group_proportions(labels, results, low=None, high=None, num=100):
         contains {group_name : [[thresholds, pass_proportions]]}
 
     """
-    if not low:
-        low = min(results)
-    if not high:
-        high = max(results)
+    low = kwargs.get("low", min(results))
+    high = kwargs.get("high", max(results))
+    num = kwargs.get("num", 100)
     thresholds = np.linspace(low, high, num).tolist()
     groups = set(labels)
     prop_dict = defaultdict(list)

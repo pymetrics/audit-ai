@@ -115,7 +115,7 @@ def classifier_posterior_probabilities(clf, df, feature_names, categories,
 
 
 def get_bias_chi2_pvals(clf, df, feature_names, categories,
-                        low=None, high=None, num=100):
+                        low=None, high=None, num=100, **kwargs):
     """
     Get p-values across a range of decision thresholds
 
@@ -197,7 +197,7 @@ def get_bias_chi2_pvals(clf, df, feature_names, categories,
 def generate_bayesfactors(clf, df, feature_names, categories,
                           prior_strength='', threshold=None,
                           hyperparam=(1, 1, 1, 1),
-                          N=1000, low=.01, high=.99, num=99):
+                          N=1000, low=.01, high=.99, num=99, **kwargs):
     """
     Function to check demographic bias of clf with reference to
     dataframe containing labeled features. Decision functions for test
