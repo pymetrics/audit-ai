@@ -216,7 +216,9 @@ def bias_bar_plot(clf, df, feature_names, categories, **kwargs):
     bias_report = make_bias_report(clf, df, feature_names, categories,
                                    **kwargs)
 
-    bias_report_plot(bias_report)
+    ax = bias_report_plot(bias_report)
+
+    return ax
 
 
 def plot_threshold_tests(labels, results, category=None, comp_groups=None,
