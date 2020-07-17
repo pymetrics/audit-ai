@@ -295,6 +295,12 @@ def generate_bayesfactors(clf, df, feature_names, categories,
                 ct_table = pd.crosstab(
                     sorted_df.loc[mask, category],
                     sorted_df.loc[mask, matched_col]
+                )
+
+                ct_table = ct_table.reindex(
+                    index=[v1, v2],
+                    columns=[0, 1],
+                    fill_value=0
                 ).values
 
                 feat_sim = sim_beta_ratio(ct_table, thresh, prior_strength,
